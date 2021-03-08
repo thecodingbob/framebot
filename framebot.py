@@ -170,7 +170,8 @@ class SingleVideoFrameBot:
                 print("Posting mirrored frame...")
                 self.post_mirror_frame(frame, message)
             print(f"Uploaded.\nWaiting {self.upload_interval} seconds before the next one...\n")
-
+            if not self.best_of_reposting_enabled:
+                os.remove(frame)
             time.sleep(self.upload_interval)
 
         if self.best_of_reposting_enabled:
