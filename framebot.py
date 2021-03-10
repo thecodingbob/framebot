@@ -46,7 +46,7 @@ class SingleVideoFrameBot:
             self.best_of_reactions_threshold = best_of_reactions_threshold
             self.best_of_wait_hours = best_of_wait_hours
             self.best_of_album_id = best_of_album_id
-            self.best_of_local_dir = os.path.join("albums", f"Best of {self.movie_title}")
+            self.best_of_local_dir = os.path.join("albums", "".join(x for x in f"Bestof_{self.movie_title.replace(os.path.sep, '-')}" if (x.isalnum()) or x in "._- "))
             os.makedirs(self.best_of_local_dir, exist_ok=True)
         self.frames_directory = frames_directory
         self.frames_ext = frames_ext
