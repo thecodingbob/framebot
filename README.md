@@ -3,7 +3,7 @@ A Facebook framebot supporting reuploading of most reacted frames and random mir
 
 This project is still in a very early stage.
 ## Requirements
-- Python 3: https://www.python.org/downloads/
+- Python >= 3.7: https://www.python.org/downloads/
 
 You can install the other required packages with `pip install -r requirements.txt`. You may have to use pip3 and sudo if you're on Linux/Mac, depending on your configuration.
 ## Usage
