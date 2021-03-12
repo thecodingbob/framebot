@@ -135,6 +135,7 @@ class SingleVideoFrameBot:
                         print("Done.\n")
                     os.remove(frame_to_check["path"])
                     self.best_of_to_check["list"].pop(0)
+                    safe_json_dump(self.best_of_to_check_file, self.best_of_to_check)
                     modified = True
         except Exception as e:
             print(e)
