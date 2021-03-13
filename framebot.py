@@ -26,7 +26,7 @@ class SingleVideoFrameBot:
                  mirror_photos_album_id=None, mirroring_ratio=0.5, best_of_reposting_enabled=False,
                   best_of_reactions_threshold=0, best_of_album_id=None, best_of_wait_hours=24,
                  best_of_to_check_file="bofc.json", frames_directory="frames", frames_ext="jpg",
-                 upload_interval=150, bot_name="Bot"):
+                 upload_interval=150, bot_name="Bot", delete_files=False, album_420_id=None):
         self.access_token = access_token
         self.page_id = page_id
         self.movie_title = movie_title
@@ -63,6 +63,8 @@ class SingleVideoFrameBot:
         else:
             self.last_frame_uploaded = -1
         self.bot_name = bot_name
+        self.delete_files = delete_files
+        self.album_420_id = album_420_id
 
     def upload_photo(self, image, message, album=None):
         if album is None:
@@ -126,14 +128,18 @@ class SingleVideoFrameBot:
                         message = f"Reactions after {int(elapsed_hours)} hours: {reactions}.\n" + \
                                   f"Original post: https://facebook.com/{frame_to_check['post_id']}\n\n" + \
                                   self.get_default_message(frame_to_check['frame_number'])
-                        self.upload_photo(frame_to_check["path"], message, frame_to_check["album_id"])
-                        shutil.copyfile(frame_to_check["path"],
-                                        os.path.join(self.best_of_local_dir,
-                                                     f"Frame {frame_to_check['frame_number']} "
-                                                     f"id {frame_to_check['post_id']} "
-                                                     f"reactions {reactions}.jpg"))
-                        print("Done.\n")
-                    os.remove(frame_to_check["path"])
+                        if os.path.exists(frame_to_check["path"]):
+                            self.upload_photo(frame_to_check["path"], message, frame_to_check["album_id"])
+                            shutil.copyfile(frame_to_check["path"],
+                                            os.path.join(self.best_of_local_dir,
+                                                         f"Frame {frame_to_check['frame_number']} "
+                                                         f"id {frame_to_check['post_id']} "
+                                                         f"reactions {reactions}.jpg"))
+                            print("Done.\n")
+                        else:
+                            print(f"File {frame_to_check['path']} is missing. Skipping uploading to best of album...")
+                    if self.delete_files:
+                        os.remove(frame_to_check["path"])
                     self.best_of_to_check["list"].pop(0)
                     safe_json_dump(self.best_of_to_check_file, self.best_of_to_check)
                     modified = True
@@ -166,12 +172,13 @@ class SingleVideoFrameBot:
                     {"time": str(datetime.now()), "post_id": post_id, "path": frame,
                      "album_id": best_of_album_id, "frame_number": frame_number})
                 safe_json_dump(self.best_of_to_check_file, self.best_of_to_check)
-
+            if frame_number == 420:
+                self.upload_photo(frame, message, self.album_420_id)
             if self.mirroring_enabled and random() > (1 - self.mirroring_ratio / 100):
                 print("Posting mirrored frame...")
                 self.post_mirror_frame(frame, message)
             print(f"Uploaded.\nWaiting {self.upload_interval} seconds before the next one...\n")
-            if not self.best_of_reposting_enabled:
+            if self.delete_files and not self.best_of_reposting_enabled:
                 os.remove(frame)
             time.sleep(self.upload_interval)
 
@@ -223,6 +230,8 @@ if __name__ == '__main__':
     mirror_album_id = config["mirroring"]["mirror_album_id"]
     best_of_check_file = config["best_of_album_uploader"]["local_file"]
     bot_name = config["bot_settings"]["bot_name"]
+    delete_files = config["bot_settings"]["delete_files"]
+    album_420_id = config["post420"]["album_id_420"]
 
     bot = SingleVideoFrameBot(access_token=access_token, page_id=page_id, movie_title=movie_title,
                               mirror_photos_album_id=mirror_album_id,
@@ -230,7 +239,7 @@ if __name__ == '__main__':
                               best_of_wait_hours=wait_hours, best_of_to_check_file=best_of_check_file,
                               upload_interval=upload_interval, best_of_album_id=best_of_album_id,
                               mirroring_enabled=mirroring_enabled, best_of_reposting_enabled=best_of_reposting_enabled,
-                              mirroring_ratio=mirroring_ratio)
+                              mirroring_ratio=mirroring_ratio, delete_files=delete_files, album_420_id=album_420_id)
 
     bot.start_upload()
 
