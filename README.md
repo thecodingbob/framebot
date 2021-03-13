@@ -24,6 +24,7 @@ You can change the bot's behavior editing the options in the `config.ini` file, 
   - *upload_interval* - Change this to make the bot post frames more or less often. Don't set it too small or you'll quickly end your API usages and end up blocked for hours.
   - *movie_title* - The title of the video/movie you want to show in each post.
   - *bot_name* - The bot's name. As now it's only used when posting mirrored images. You can give it a funny name you like, or you can ignore him and just let it call himself "Bot".
+  - *delete_files* - Set this to True if you want the bot to delete the frame files after they're not needed anymore. Can break the bot if you stop it while it's uploading files or checking for best-ofs.
 - **best_of_album_uploader**
   - *enabled* - Set this to `True` if you want the bot to check the reactions your frames got after a fixed amount of time, and repost it in an album if those exceed a fixed the threshold. If you don't want this feature, set this option to False.
   - *local_file* - The file the bot will use to store information about frames posted but not yet checked for reposting. You can leave this option alone, it's just a filename.
