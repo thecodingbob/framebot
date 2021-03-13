@@ -13,7 +13,6 @@ You can install the other required packages with `pip install -r requirements.tx
 - Paste the generated token and the page id in the `config.ini` file 
 - Configure the other options in the `config.ini` file as you like
 - Put the frames you want to post in the `frames/` directory 
-  - **WARNING**: The bot deletes the frames after posting them (or after checking for most reacted reupload, if the option is enabled)
 - Open a powershell/bash/any shell you like window in the directory where you extracted the files and run `python framebot.py`
 ## Configuration
 You can change the bot's behavior editing the options in the `config.ini` file, which is divide in four sections:
