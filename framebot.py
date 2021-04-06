@@ -157,7 +157,7 @@ class SingleVideoFrameBot:
             if frame_number <= self.last_frame_uploaded:
                 continue
 
-            print(f"Uploading frame {frame_number} di {self.total_frames_number}...")
+            print(f"Uploading frame {frame_number} of {self.total_frames_number}...")
 
             message = self.get_default_message(frame_number)
             post_id = self.upload_photo(frame, message)
