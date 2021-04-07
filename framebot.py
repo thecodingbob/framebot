@@ -56,10 +56,12 @@ class SingleVideoFrameBot:
             self.total_frames_number = 0
         else:
             self.total_frames_number = self.get_frame_index_number(get_filename(self.frames[-1]))
+        print(f"Found {len(self.frames)} frames.")
         self.upload_interval = upload_interval
         if os.path.exists("last_frame_uploaded"):
             with open("last_frame_uploaded") as f:
                 self.last_frame_uploaded = int(f.read())
+                print(f"Last frame uploaded is {self.last_frame_uploaded}.")
         else:
             self.last_frame_uploaded = -1
         self.bot_name = bot_name
@@ -235,7 +237,7 @@ if __name__ == '__main__':
                               best_of_wait_hours=wait_hours, best_of_to_check_file=best_of_check_file,
                               upload_interval=upload_interval, best_of_album_id=best_of_album_id,
                               mirroring_enabled=mirroring_enabled, best_of_reposting_enabled=best_of_reposting_enabled,
-                              mirroring_ratio=mirroring_ratio, delete_files=delete_files)
+                              mirroring_ratio=mirroring_ratio, delete_files=delete_files, bot_name=bot_name)
 
     bot.start_upload()
 
