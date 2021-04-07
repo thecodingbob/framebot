@@ -26,7 +26,7 @@ You can change the bot's behavior editing the options in the `config.ini` file, 
   - *delete_files* - Set this to True if you want the bot to delete the frame files after they're not needed anymore. Can break the bot if you stop it while it's uploading files or checking for best-ofs.
 - **best_of_album_uploader**
   - *enabled* - Set this to `True` if you want the bot to check the reactions your frames got after a fixed amount of time, and repost it in an album if those exceed a fixed the threshold. If you don't want this feature, set this option to False.
-  - *local_file* - The file the bot will use to store information about frames posted but not yet checked for reposting. You can leave this option alone, it's just a filename.
+  - *local_file* - The file the bot will use to store information about frames posted but not yet checked for reposting. You can leave this option as is (DON'T DELETE THIS!), it's just a filename.
   - *best_of_album_id* - The id of the album where to repost the most reacted frames. You have to create this manually, since Facebook's API don't support programmatic album creation. You can find an album's id in the url: `https://www.facebook.com/media/set/?vanity=page&set=a.album_id`.
   - *reactions_threshold* - The threshold for reposting. Frames with more than that will be reposted. Set this according to the average reaction number you expect on popular frames.
   - *wait_hours* - Number of hours a frame is given to accumulate reactions, before it's checked for reposting.
