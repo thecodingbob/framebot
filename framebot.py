@@ -8,8 +8,10 @@ from datetime import datetime
 import json
 from PIL import Image, ImageOps
 import shutil
-from random import random, randint
+from random import random
 from io import BytesIO
+import platform
+import sys
 
 def safe_json_dump(fpath, jsoncontent):
     safe_path = fpath + "_safe"
@@ -27,6 +29,7 @@ class SingleVideoFrameBot:
                   best_of_reactions_threshold=0, best_of_album_id=None, best_of_wait_hours=24,
                  best_of_to_check_file="bofc.json", frames_directory="frames", frames_ext="jpg",
                  upload_interval=150, bot_name="Bot", delete_files=False):
+        print(f"Initializing {bot_name}...")
         self.access_token = access_token
         self.page_id = page_id
         self.movie_title = movie_title
@@ -39,6 +42,7 @@ class SingleVideoFrameBot:
         if self.best_of_reposting_enabled:
             self.best_of_to_check_file = best_of_to_check_file
             if os.path.exists(self.best_of_to_check_file):
+                print(f"Found existing {self.best_of_to_check_file} files for best of checks, trying to load it...")
                 with open(best_of_check_file) as f:
                     self.best_of_to_check = json.load(f)
             else:
@@ -47,6 +51,7 @@ class SingleVideoFrameBot:
             self.best_of_wait_hours = best_of_wait_hours
             self.best_of_album_id = best_of_album_id
             self.best_of_local_dir = os.path.join("albums", "".join(x for x in f"Bestof_{self.movie_title.replace(os.path.sep, '-')}" if (x.isalnum()) or x in "._- "))
+            print(f"Best ofs will be saved locally in the directory {self.best_of_local_dir}.")
             os.makedirs(self.best_of_local_dir, exist_ok=True)
         self.frames_directory = frames_directory
         self.frames_ext = frames_ext
@@ -63,9 +68,11 @@ class SingleVideoFrameBot:
                 self.last_frame_uploaded = int(f.read())
                 print(f"Last frame uploaded is {self.last_frame_uploaded}.")
         else:
+            print(f"Starting the bot from the first frame.")
             self.last_frame_uploaded = -1
         self.bot_name = bot_name
         self.delete_files = delete_files
+        print("Done initializing.\n")
 
     def upload_photo(self, image, message, album=None):
         if album is None:
@@ -112,6 +119,7 @@ class SingleVideoFrameBot:
         return f"{self.movie_title}\nFrame {frame_number} of {self.total_frames_number}"
 
     def advance_bests(self):
+        print(f"Checking for best of reuploading...")
         checked_all = False
         modified = False
         try:
@@ -122,6 +130,7 @@ class SingleVideoFrameBot:
                 if elapsed_hours < self.best_of_wait_hours:
                     checked_all = True
                 else:
+                    print(f"Checking entry {frame_to_check}...")
                     page_story_id = self.graph.get_object(frame_to_check["post_id"], fields="page_story_id")["page_story_id"]
                     reactions = self.graph.get_object(id=page_story_id, fields="reactions.summary(total_count)")["reactions"]["summary"]["total_count"]
                     if reactions > self.best_of_reactions_threshold:
@@ -149,15 +158,16 @@ class SingleVideoFrameBot:
         finally:
             if modified:
                 safe_json_dump(self.best_of_to_check_file, self.best_of_to_check)
+        print("Done checking for best ofs.\n")
 
     def start_upload(self):
         for frame in self.frames:
-            if self.best_of_reposting_enabled:
-                self.advance_bests()
-
             frame_number = self.get_frame_index_number(get_filename(frame))
             if frame_number <= self.last_frame_uploaded:
                 continue
+
+            if self.best_of_reposting_enabled:
+                self.advance_bests()
 
             print(f"Uploading frame {frame_number} of {self.total_frames_number}...")
 
@@ -169,6 +179,7 @@ class SingleVideoFrameBot:
                 f.write(str(frame_number))
 
             if self.best_of_reposting_enabled:
+                print(f"Queueing frame {frame_number} for best of checking...")
                 self.best_of_to_check["list"].append(
                     {"time": str(datetime.now()), "post_id": post_id, "path": frame,
                      "album_id": best_of_album_id, "frame_number": frame_number})
@@ -199,6 +210,8 @@ if __name__ == '__main__':
     config.read('config.ini')
 
     upload_interval = config.getint("bot_settings", "upload_interval")
+    frames_directory = config["bot_settings"]["frames_directory"]
+    frames_ext = config["bot_settings"]["frames_ext"]
 
     reactions_threshold = config.getint("best_of_album_uploader", "reactions_threshold")
     wait_hours = config.getint("best_of_album_uploader", "wait_hours")
@@ -231,13 +244,25 @@ if __name__ == '__main__':
     bot_name = config["bot_settings"]["bot_name"]
     delete_files = config["bot_settings"]["delete_files"]
 
+    op_sys = platform.system()
+    window_title = f"Framebot - {movie_title}"
+    if op_sys == "Windows":
+        os.system(f"title {window_title}")
+    elif op_sys == "Linux":
+        sys.stdout.write(f"\x1b]2;{window_title}\x07")
+
+    print(f"Starting bot named {bot_name} for {movie_title}. Frames will be picked from directory {frames_directory} with {frames_ext} extension."
+          f"\nRandom mirroring is {('enabled with ratio ' + str(mirroring_ratio)) if mirroring_enabled else 'disabled'}."
+          f"\nBest of reposting is {('enabled with threshold ' + str(reactions_threshold) + ' and ' + str(wait_hours) + ' wait hours') if mirroring_enabled else 'disabled'}."
+          f"\nThe bot will try to post a frame every {upload_interval} seconds and will {'' if delete_files else 'not '}delete those after it's done.\n")
     bot = SingleVideoFrameBot(access_token=access_token, page_id=page_id, movie_title=movie_title,
                               mirror_photos_album_id=mirror_album_id,
                               best_of_reactions_threshold=reactions_threshold,
                               best_of_wait_hours=wait_hours, best_of_to_check_file=best_of_check_file,
                               upload_interval=upload_interval, best_of_album_id=best_of_album_id,
                               mirroring_enabled=mirroring_enabled, best_of_reposting_enabled=best_of_reposting_enabled,
-                              mirroring_ratio=mirroring_ratio, delete_files=delete_files, bot_name=bot_name)
+                              mirroring_ratio=mirroring_ratio, delete_files=delete_files, bot_name=bot_name, frames_ext=frames_ext,
+                              frames_directory=frames_directory)
 
     bot.start_upload()
 

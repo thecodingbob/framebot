@@ -12,7 +12,7 @@ You can install the other required packages with `pip install -r requirements.tx
 - Generate a page access token here: http://maxbots.ddns.net/token/
 - Paste the generated token and the page id in the `config.ini` file 
 - Configure the other options in the `config.ini` file as you like
-- Put the frames you want to post in the `frames/` directory 
+- Put the frames you want to post in the `frames/` directory (or change the folder name in the `config.ini` file and put the frames in the folder with that name)
 - Open a powershell/bash/any shell you like window in the directory where you extracted the files and run `python framebot.py`
 ## Configuration
 You can change the bot's behavior editing the options in the `config.ini` file, which is divide in four sections:
@@ -24,6 +24,8 @@ You can change the bot's behavior editing the options in the `config.ini` file, 
   - *movie_title* - The title of the video/movie you want to show in each post.
   - *bot_name* - The bot's name. As now it's only used when posting mirrored images. You can give it a funny name you like, or you can ignore him and just let it call himself "Bot".
   - *delete_files* - Set this to True if you want the bot to delete the frame files after they're not needed anymore. Can break the bot if you stop it while it's uploading files or checking for best-ofs.
+  - *frames_directory* - The directory from where the bot pulls the frames
+  - *frames_ext* - The file extension of the frame files
 - **best_of_album_uploader**
   - *enabled* - Set this to `True` if you want the bot to check the reactions your frames got after a fixed amount of time, and repost it in an album if those exceed a fixed the threshold. If you don't want this feature, set this option to False.
   - *local_file* - The file the bot will use to store information about frames posted but not yet checked for reposting. You can leave this option as is (DON'T DELETE THIS!), it's just a filename.
