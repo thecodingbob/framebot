@@ -207,7 +207,7 @@ class SingleVideoFrameBot:
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
-    config.read('config.ini')
+    config.read('config.ini', encoding='utf-8')
 
     upload_interval = config.getint("bot_settings", "upload_interval")
     frames_directory = config["bot_settings"]["frames_directory"]
