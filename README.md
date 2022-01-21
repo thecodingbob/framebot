@@ -17,7 +17,7 @@ You can install the other required packages with `pip install -r requirements.tx
 ## Configuration
 You can change the bot's behavior editing the options in the `config.ini` file, which is divided in four sections:
 - **facebook**
-  - *page_id* - Your page's id. You can get it in the about section of the page.
+  - *page_id* - Your page's id. You can get it in the "about" section of the page.
   - *access_token* - The access token the bot needs to post on your page. See the Usage section.
 - **bot_settings** 
   - *upload_interval* - Change this to make the bot post frames more or less often. Don't set it too small, or you'll quickly end your API usages and end up blocked for hours.
@@ -26,6 +26,7 @@ You can change the bot's behavior editing the options in the `config.ini` file, 
   - *delete_files* - Set this to True if you want the bot to delete the frame files after they're not needed anymore. Can break the bot if you stop it while it's uploading files or checking for best-ofs.
   - *frames_directory* - The directory from where the bot pulls the frames
   - *frames_ext* - The file extension of the frame files
+  - *frames_naming* - How your frames are named. Enter your naming pattern and use `$N$` to specify where the frame number is in the pattern. For example: `frame$N$` if your frames are named like `frame0001.jpg, frame0002.jpg`, etc.
 - **best_of_album_uploader**
   - *enabled* - Set this to `True` if you want the bot to check the reactions your frames got after a fixed amount of time, and repost it on an album if those exceed a fixed the threshold. If you don't want this feature, set this option to False.
   - *local_file* - The file the bot will use to store information about frames posted but not yet checked for reposting. You can leave this option as is (DON'T DELETE THIS!), it's just a filename.
