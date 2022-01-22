@@ -3,6 +3,7 @@ import os
 import time
 from datetime import datetime
 import json
+from typing import Union
 # noinspection PyPackageRequirements
 import facebook
 from PIL import Image, ImageOps
@@ -17,12 +18,35 @@ LAST_FRAME_UPLOADED_FILE = "last_frame_uploaded"
 
 
 class FrameBot:
-    def __init__(self, access_token, page_id, movie_title, mirroring_enabled=False,
-                 mirror_photos_album_id=None, mirroring_ratio=0.5, best_of_reposting_enabled=False,
-                 best_of_reactions_threshold=0, best_of_album_id=None, best_of_wait_hours=24,
-                 best_of_to_check_file="bofc.json", frames_directory="frames", frames_ext="jpg",
-                 frames_naming="$N$",
-                 upload_interval=150, bot_name="Bot", delete_files=False):
+    def __init__(self, access_token: str, page_id: str, movie_title: str, mirroring_enabled: bool = False,
+                 mirror_photos_album_id: str = None, mirroring_ratio: float = 0.5,
+                 best_of_reposting_enabled: bool = False, best_of_reactions_threshold: int = 0,
+                 best_of_album_id: str = None, best_of_wait_hours: int = 24, best_of_to_check_file: str = "bofc.json",
+                 frames_directory: str = "frames", frames_ext: str = "jpg", frames_naming: str = "$N$",
+                 upload_interval: int = 150, bot_name: str = "Bot", delete_files: bool = False):
+        """
+        Constructor
+        :param access_token: Access token for the Facebook page
+        :param page_id: Id of the Facebook page
+        :param movie_title: Title of the movie/episode/whatever you want to post. Will be showed in the posts
+            description
+        :param mirroring_enabled: If the random mirroring of the images is enabled or not
+        :param mirror_photos_album_id: Id of the album where the mirrored photos will be posted
+        :param mirroring_ratio: Percentage of frames that will get mirroring
+        :param best_of_reposting_enabled: If the reposting of the frames with more reactions is enabled or not
+        :param best_of_reactions_threshold: If the reposting is enabled, all the frames having more than this number
+            of reactions after the check will be reposted
+        :param best_of_album_id: Id of the album where best of frames will be reposted
+        :param best_of_wait_hours: Hours to wait before checking if frames have exceeded the reposting threshold
+        :param best_of_to_check_file: File used to keep information about frames that have yet to be checked for
+            best of reposting
+        :param frames_directory: Directory where the frame files are stored
+        :param frames_ext: Extension of the frame files
+        :param frames_naming: Naming pattern of the frame files e.g frame$N$
+        :param upload_interval: time interval between one frame and the other, in seconds
+        :param bot_name: bot's name, currently used only in the mirrored posts
+        :param delete_files: if this flag is enabled, the frame files will be deleted after those served their purpose
+        """
         print(f"Initializing {bot_name}...")
         self.access_token = access_token
         self.page_id = page_id
@@ -73,7 +97,13 @@ class FrameBot:
         self.delete_files = delete_files
         print("Done initializing.\n")
 
-    def upload_photo(self, image, message, album=None):
+    def upload_photo(self, image: Union[str, Image], message: str, album: str = None) -> None:
+        """
+        Uploads a photo to a specific album, or to the news feed if no album id is specified.
+        :param image: The image to be posted. Could be a path to an image file or a PIL Image
+        :param message: The message used as image description
+        :param album: The album where to post the image.
+        """
         if album is None:
             album = self.page_id
         uploaded = False
@@ -100,7 +130,12 @@ class FrameBot:
                 retry_count += 1
         return page_post_id
 
-    def post_mirror_frame(self, image_path, og_message):
+    def post_mirror_frame(self, image_path: str, og_message: str) -> None:
+        """
+        Mirrors a frame and posts it.
+        :param image_path: Path to the image to be mirrored
+        :param og_message: Message of the original post
+        """
         im = Image.open(image_path)
         flippedhalf = ImageOps.mirror(im.crop((0, 0, im.size[0] // 2, im.size[1])))
         im.paste(flippedhalf, (im.size[0] // 2, 0))
@@ -114,13 +149,26 @@ class FrameBot:
         message += f"\nJust a randomly mirrored image.\n-{self.bot_name}"
         self.upload_photo(image_file, message, self.mirror_photos_album_id)
 
-    def get_frame_index_number(self, file_name):
+    def get_frame_index_number(self, file_name: str) -> int:
+        """
+        Using the frame naming regexp, extracts the frame number from the filename.
+        :param file_name: The filename of the frame file.
+        :return: The frame number
+        """
         return int(self.frames_naming.search(file_name).group(1))
 
-    def get_default_message(self, frame_number):
+    def get_default_message(self, frame_number: int) -> str:
+        """
+        Generates the default message for a post
+        :param frame_number: the index number of the frame
+        :return: the post message
+        """
         return f"{self.movie_title}\nFrame {frame_number} of {self.total_frames_number}"
 
-    def advance_bests(self):
+    def advance_bests(self) -> None:
+        """
+        Checks if there are frames to repost into the best-of album, and posts those if there are.
+        """
         print(f"Checking for best of reuploading...")
         checked_all = False
         modified = False
@@ -165,7 +213,10 @@ class FrameBot:
                 utils.safe_json_dump(self.best_of_to_check_file, self.best_of_to_check)
         print("Done checking for best ofs.\n")
 
-    def start_upload(self):
+    def start_upload(self) -> None:
+        """
+        Starts the framebot upload loop.
+        """
         for frame in self.frames:
             frame_number = self.get_frame_index_number(frame)
             if frame_number <= self.last_frame_uploaded:
