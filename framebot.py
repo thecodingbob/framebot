@@ -42,7 +42,7 @@ mirroring_ratio = config.getfloat("mirroring", "ratio")
 mirror_album_id = config["mirroring"]["mirror_album_id"]
 best_of_check_file = config["best_of_album_uploader"]["local_file"]
 bot_name = config["bot_settings"]["bot_name"]
-delete_files = config["bot_settings"]["delete_files"]
+delete_files = config.getboolean("bot_settings","delete_files")
 
 op_sys = platform.system()
 window_title = f"Framebot - {movie_title}"
