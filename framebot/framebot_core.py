@@ -97,12 +97,14 @@ class FrameBot:
         self.delete_files = delete_files
         print("Done initializing.\n")
 
-    def upload_photo(self, image: Union[str, Image], message: str, album: str = None) -> None:
+    def upload_photo(self, image: Union[str, BytesIO], message: str, album: str = None) -> str:
         """
         Uploads a photo to a specific album, or to the news feed if no album id is specified.
-        :param image: The image to be posted. Could be a path to an image file or a PIL Image
+        :param image: The image to be posted. Could be a path to an image file or a BytesIO object containing the image
+        data
         :param message: The message used as image description
-        :param album: The album where to post the image.
+        :param album: The album where to post the image
+        :return the resulting post id
         """
         if album is None:
             album = self.page_id
