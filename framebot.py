@@ -51,22 +51,6 @@ if op_sys == "Windows":
 elif op_sys == "Linux":
     sys.stdout.write(f"\x1b]2;{window_title}\x07")
 
-print(f"Starting bot named {bot_name} for {movie_title}. Frames will be picked from directory {frames_directory} with "
-      f"{frames_ext} extension."
-      f"\nThe bot will try to post a frame every "
-      f"{upload_interval} seconds and will {'' if delete_files else 'not '}delete those after it's done.\n")
-
-mirroring_message = f"\nRandom mirroring is"
-mirroring_message += f"{('enabled with ratio ' + str(mirroring_ratio)) if mirroring_enabled else 'disabled'}."
-print(mirroring_message)
-
-bestof_message = f"\nBest of reposting is "
-if best_of_reposting_enabled:
-    bestof_message += f"enabled with threshold {reactions_threshold} and {wait_hours} wait hours."
-else:
-    bestof_message += "disabled"
-print(bestof_message)
-
 bot = FrameBot(access_token=access_token, page_id=page_id, movie_title=movie_title,
                mirror_photos_album_id=mirror_album_id,
                best_of_reactions_threshold=reactions_threshold,
