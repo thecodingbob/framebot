@@ -259,4 +259,5 @@ class FrameBot:
                         f"There are still {len(self.best_of_to_check['list'])} frames to check for best of. Sleeping "
                         f"for one hour...")
                     time.sleep(3600)
-        os.remove(LAST_FRAME_UPLOADED_FILE)
+        if os.path.exists(LAST_FRAME_UPLOADED_FILE):
+            os.remove(LAST_FRAME_UPLOADED_FILE)
