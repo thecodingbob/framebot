@@ -58,6 +58,6 @@ bot = FrameBot(access_token=access_token, page_id=page_id, movie_title=movie_tit
                upload_interval=upload_interval, best_of_album_id=best_of_album_id,
                mirroring_enabled=mirroring_enabled, best_of_reposting_enabled=best_of_reposting_enabled,
                mirroring_ratio=mirroring_ratio, delete_files=delete_files, bot_name=bot_name, frames_ext=frames_ext,
-               frames_directory=frames_directory)
+               frames_directory=frames_directory, frames_naming=frames_naming)
 
 bot.start_upload()
