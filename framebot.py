@@ -3,7 +3,7 @@ import os
 import platform
 import sys
 
-from framebot.framebot_core import FrameBot
+from framebot.framebots import SingleVideoFrameBot
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
@@ -42,7 +42,7 @@ mirroring_ratio = config.getfloat("mirroring", "ratio")
 mirror_album_id = config["mirroring"]["mirror_album_id"]
 best_of_check_file = config["best_of_album_uploader"]["local_file"]
 bot_name = config["bot_settings"]["bot_name"]
-delete_files = config.getboolean("bot_settings","delete_files")
+delete_files = config.getboolean("bot_settings", "delete_files")
 
 op_sys = platform.system()
 window_title = f"Framebot - {movie_title}"
@@ -51,13 +51,23 @@ if op_sys == "Windows":
 elif op_sys == "Linux":
     sys.stdout.write(f"\x1b]2;{window_title}\x07")
 
-bot = FrameBot(access_token=access_token, page_id=page_id, movie_title=movie_title,
-               mirror_photos_album_id=mirror_album_id,
-               best_of_reactions_threshold=reactions_threshold,
-               best_of_wait_hours=wait_hours, best_of_to_check_file=best_of_check_file,
-               upload_interval=upload_interval, best_of_album_id=best_of_album_id,
-               mirroring_enabled=mirroring_enabled, best_of_reposting_enabled=best_of_reposting_enabled,
-               mirroring_ratio=mirroring_ratio, delete_files=delete_files, bot_name=bot_name, frames_ext=frames_ext,
-               frames_directory=frames_directory, frames_naming=frames_naming)
+print(
+    f"Starting bot named {bot_name} for {movie_title}. Frames will be picked from directory {frames_directory} "
+    f"with {frames_ext} extension."
+    f"\nRandom mirroring is {('enabled with ratio ' + str(mirroring_ratio)) if mirroring_enabled else 'disabled'}."
+    f"\nBest of reposting is "
+    f"{f'enabled with threshold {reactions_threshold} and {wait_hours} wait hours' if mirroring_enabled else 'disabled'}"
+    f"."
+    f"\nThe bot will try to post a frame every {upload_interval} seconds and will "
+    f"{'' if delete_files else 'not '}delete those after it's done.\n")
+bot = SingleVideoFrameBot(access_token=access_token, page_id=page_id, movie_title=movie_title,
+                          mirror_photos_album_id=mirror_album_id,
+                          best_of_reactions_threshold=reactions_threshold,
+                          best_of_wait_hours=wait_hours, best_of_to_check_file=best_of_check_file,
+                          upload_interval=upload_interval, best_of_album_id=best_of_album_id,
+                          mirroring_enabled=mirroring_enabled, best_of_reposting_enabled=best_of_reposting_enabled,
+                          mirroring_ratio=mirroring_ratio, delete_files=delete_files, bot_name=bot_name,
+                          frames_ext=frames_ext,
+                          frames_directory=frames_directory, frames_naming=frames_naming)
 
 bot.start_upload()

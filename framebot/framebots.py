@@ -1,23 +1,34 @@
-from glob import glob
+import json
 import os
+import re
+import shutil
 import time
 from datetime import datetime
-import json
+from glob import glob
+from io import BytesIO
+from random import random
 from typing import Union
-# noinspection PyPackageRequirements
+
 import facebook
 from PIL import Image, ImageOps
-import shutil
-from random import random
-from io import BytesIO
-import re
 
-from framebot import utils
+import utils
 
 LAST_FRAME_UPLOADED_FILE = "last_frame_uploaded"
 
 
-class FrameBot:
+def safe_json_dump(fpath: str, jsoncontent: dict):
+    safe_path = fpath + "_safe"
+    with open(safe_path, "w") as f:
+        json.dump(jsoncontent, f, indent=4)
+    shutil.move(safe_path, fpath)
+
+
+def get_filename(full_path: str):
+    return full_path[full_path.rfind(os.path.sep) + 1:]
+
+
+class SingleVideoFrameBot:
     def __init__(self, access_token: str, page_id: str, movie_title: str, mirroring_enabled: bool = False,
                  mirror_photos_album_id: str = None, mirroring_ratio: float = 0.5,
                  best_of_reposting_enabled: bool = False, best_of_reactions_threshold: int = 0,
