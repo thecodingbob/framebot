@@ -4,6 +4,7 @@ import platform
 import sys
 
 from framebot.framebots import SingleVideoFrameBot
+from plugins import BestOfReposter
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
@@ -60,14 +61,12 @@ print(
     f"."
     f"\nThe bot will try to post a frame every {upload_interval} seconds and will "
     f"{'' if delete_files else 'not '}delete those after it's done.\n")
-bot = SingleVideoFrameBot(access_token=access_token, page_id=page_id, movie_title=movie_title,
+bot = SingleVideoFrameBot(access_token=access_token, page_id=page_id, video_title=movie_title,
                           mirror_photos_album_id=mirror_album_id,
-                          best_of_reactions_threshold=reactions_threshold,
-                          best_of_wait_hours=wait_hours, best_of_to_check_file=best_of_check_file,
-                          upload_interval=upload_interval, best_of_album_id=best_of_album_id,
-                          mirroring_enabled=mirroring_enabled, best_of_reposting_enabled=best_of_reposting_enabled,
+                          upload_interval=upload_interval, mirroring_enabled=mirroring_enabled,
                           mirroring_ratio=mirroring_ratio, delete_files=delete_files, bot_name=bot_name,
                           frames_ext=frames_ext,
                           frames_directory=frames_directory, frames_naming=frames_naming)
 
 bot.start_upload()
+plugin = BestOfReposter(album_id="1", framebot=bot)
