@@ -4,10 +4,13 @@ import copy
 import shutil
 import time
 from datetime import timedelta, datetime
-from typing import List, Type
+from io import BytesIO
+from random import random
+from typing import List, Type, Dict
+
+from PIL import Image, ImageOps
 
 import utils
-from framebots import Framebot
 from pathlib import Path
 import os
 
@@ -17,13 +20,17 @@ from social import FacebookHelper
 
 class FrameBotPlugin(utils.LoggingObject):
 
-    def __init__(self, framebot: Framebot, depends_on: List[Type[FrameBotPlugin]] = None):
+    def __init__(self, depends_on: List[Type[FrameBotPlugin]] = None, local_directory: Path = None):
         super().__init__()
-        self.logger.info(f"Initializing plugin {type(self).__name__}")
+        class_name = type(self).__name__
+        self.logger.info(f"Initializing plugin {class_name}")
         if depends_on is None:
             depends_on = []
+        if local_directory is None:
+            local_directory = Path("plugins").joinpath(class_name)
         self.depends_on: List[Type[FrameBotPlugin]] = depends_on
-        self.framebot: Framebot = framebot
+        self.local_directory: Path = local_directory
+        self.dependencies: Dict[FrameBotPlugin] = {}
 
     def before_upload_loop(self) -> None:
         pass
@@ -40,19 +47,17 @@ class FrameBotPlugin(utils.LoggingObject):
 
 class BestOfReposter(FrameBotPlugin):
 
-    def __init__(self, framebot: Framebot, facebook_helper: FacebookHelper, album_id: str,
+    def __init__(self, facebook_helper: FacebookHelper, album_id: str,
                  video_title: str, reactions_threshold: int = 50,
                  time_threshold: timedelta = timedelta(days=1),
-                 local_directory: Path = Path("plugins").joinpath("bof_reposter"),
                  yet_to_check_file: str = "bofc.json",
                  store_best_ofs: bool = True):
-        super().__init__(framebot)
+        super().__init__()
         self.facebook_helper: FacebookHelper = facebook_helper
         self.album_id: str = album_id
         self.video_title: str = video_title
         self.reactions_threshold: int = reactions_threshold
         self.time_threshold: timedelta = time_threshold
-        self.local_directory: Path = local_directory
         self.yet_to_check_file: Path = self.local_directory.joinpath(yet_to_check_file)
         self.yet_to_check: List[FacebookFrame] = []
         normalized_video_title = "".join(
@@ -99,12 +104,12 @@ class BestOfReposter(FrameBotPlugin):
                         message = f"Reactions after {elapsed_time.total_seconds() // 3600} hours : " \
                                   f"{frame_to_check.reactions}.\n" + \
                                   f"Original post: {frame_to_check.url}\n\n" + \
-                                  self.get_default_message(frame_to_check.number)
+                                  frame_to_check.text
                         if os.path.exists(frame_to_check.local_file):
                             self.facebook_helper.upload_photo(frame_to_check.local_file, message, self.album_id)
                             shutil.copyfile(frame_to_check.local_file,
                                             os.path.join(self.album_path,
-                                                         f"Frame {frame_to_check.number } "
+                                                         f"Frame {frame_to_check.number} "
                                                          f"id {frame_to_check.story_id} "
                                                          f"reactions {frame_to_check.reactions}"))
                         else:
@@ -153,3 +158,48 @@ class BestOfReposter(FrameBotPlugin):
 
     def after_upload_loop(self) -> None:
         self._handle_quicker()
+
+
+class MirroredFramePoster(FrameBotPlugin):
+
+    def __init__(self, facebook_helper: FacebookHelper, album_id: str, ratio: float = 0.5,
+                 bot_name: str = "MirrorBot", mirror_original_message: bool = True,
+                 extra_message: str = None):
+        super().__init__()
+        self.facebook_helper: FacebookHelper = facebook_helper
+        self.album_id: str = album_id
+        self.ratio: float = ratio
+        self.bot_name: str = bot_name
+        self.mirror_original_message: bool = mirror_original_message
+        if extra_message is None:
+            extra_message = f"Just a randomly mirrored image.\n-{self.bot_name}"
+        self.extra_message = extra_message
+        self.logger.info(f"Random mirroring is enabled with ratio {self.ratio}. Mirrored frames will be "
+                         f"posted to the album with id {self.album_id}.")
+
+    def _post_mirror_frame(self, frame: FacebookFrame) -> str:
+        """
+        Mirrors a frame and posts it.
+        :param frame: Frame to be mirrored
+        :return the posted photo id
+        """
+        im = Image.open(frame.local_file)
+        flipped_half = ImageOps.mirror(im.crop((0, 0, im.size[0] // 2, im.size[1])))
+        im.paste(flipped_half, (im.size[0] // 2, 0))
+        image_file = BytesIO()
+        im.save(image_file, "jpeg")
+        lines = frame.text.split("\n")
+        message = ""
+        if self.mirror_original_message:
+            for line in lines:
+                message += line[:len(line) // 2] + line[len(line) // 2::-1] + "\n"
+        if self.extra_message != "":
+            if self.mirror_original_message:
+                message += "\n"
+            message += self.extra_message
+        return self.facebook_helper.upload_photo(image_file, message, self.album_id)
+
+    def after_frame_upload(self, frame: FacebookFrame) -> None:
+        if random() > (1 - self.ratio / 100):
+            self.logger.info("Posting mirrored frame...")
+            self._post_mirror_frame(frame)

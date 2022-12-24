@@ -5,6 +5,7 @@ import sys
 
 from framebot.framebots import SingleVideoFrameBot
 from plugins import BestOfReposter
+from social import FacebookHelper
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
@@ -61,7 +62,8 @@ print(
     f"."
     f"\nThe bot will try to post a frame every {upload_interval} seconds and will "
     f"{'' if delete_files else 'not '}delete those after it's done.\n")
-bot = SingleVideoFrameBot(access_token=access_token, page_id=page_id, video_title=movie_title,
+facebook_helper = FacebookHelper(access_token=access_token, page_id=page_id)
+bot = SingleVideoFrameBot(facebook_helper=facebook_helper, video_title=movie_title,
                           mirror_photos_album_id=mirror_album_id,
                           upload_interval=upload_interval, mirroring_enabled=mirroring_enabled,
                           mirroring_ratio=mirroring_ratio, delete_files=delete_files, bot_name=bot_name,
@@ -69,4 +71,4 @@ bot = SingleVideoFrameBot(access_token=access_token, page_id=page_id, video_titl
                           frames_directory=frames_directory, frames_naming=frames_naming)
 
 bot.start_upload()
-plugin = BestOfReposter(album_id="1", framebot=bot)
+plugin = BestOfReposter(album_id="1", facebook_helper=facebook_helper, video_title=movie_title)

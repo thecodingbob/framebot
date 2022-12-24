@@ -25,16 +25,12 @@ class Framebot(object):
 
 
 class SingleVideoFrameBot(Framebot):
-    def __init__(self, facebook_helper: FacebookHelper, video_title: str, mirroring_enabled: bool = False,
-                 mirror_photos_album_id: str = None, mirroring_ratio: float = 0.5,
+    def __init__(self, facebook_helper: FacebookHelper, video_title: str,
                  frames_directory: str = "frames", frames_ext: str = "jpg", frames_naming: str = "$N$",
                  upload_interval: int = 150, bot_name: str = "Bot", delete_files: bool = False):
         """"
         :param video_title: Title of the movie/episode/whatever you want to post. Will be showed in the posts
             description
-        :param mirroring_enabled: If the random mirroring of the images is enabled or not
-        :param mirror_photos_album_id: Id of the album where the mirrored photos will be posted
-        :param mirroring_ratio: Percentage of frames that will get mirroring
         :param frames_directory: Directory where the frame files are stored
         :param frames_ext: Extension of the frame files
         :param frames_naming: Naming pattern of the frame files e.g frame$N$
@@ -60,6 +56,7 @@ class SingleVideoFrameBot(Framebot):
         self.frames_naming = re.compile(expr)
         self.logger.info(f"Frames will be picked from the directory '{self.frames_directory}'. Will search for "
                          f".{frames_ext} files with naming pattern {frames_naming}.")
+
         self.frames: List[FacebookFrame] = [
             FacebookFrame(self.get_frame_index_number(frame_path), frame_path)
             for frame_path in glob(os.path.join(frames_directory, f"*.{self.frames_ext}"))
@@ -71,14 +68,6 @@ class SingleVideoFrameBot(Framebot):
             self.total_frames_number = self.frames[-1].number
         self.logger.info(f"Found {len(self.frames)} frames.")
 
-        # Mirroring
-        self.mirroring_enabled = mirroring_enabled
-        if self.mirroring_enabled:
-            self.mirroring_ratio = mirroring_ratio
-            self.mirror_photos_album_id = mirror_photos_album_id
-            self.logger.info(f"Random mirroring is enabled with ratio {self.mirroring_ratio}. Mirrored frames will be "
-                             f"posted to the album with id {self.mirror_photos_album_id}.")
-
         # Last frame uploaded or fresh start
         if os.path.exists(LAST_FRAME_UPLOADED_FILE):
             with open(LAST_FRAME_UPLOADED_FILE) as f:
@@ -89,26 +78,6 @@ class SingleVideoFrameBot(Framebot):
             self.last_frame_uploaded = -1
 
         self.logger.info("Done initializing.")
-
-    def post_mirror_frame(self, image_path: str, og_message: str) -> str:
-        """
-        Mirrors a frame and posts it.
-        :param image_path: Path to the image to be mirrored
-        :param og_message: Message of the original post
-        :return the posted photo id
-        """
-        im = Image.open(image_path)
-        flippedhalf = ImageOps.mirror(im.crop((0, 0, im.size[0] // 2, im.size[1])))
-        im.paste(flippedhalf, (im.size[0] // 2, 0))
-        image_file = BytesIO()
-        im.save(image_file, "jpeg")
-        lines = og_message.split("\n")
-        message = ""
-        for line in lines:
-            message += line[:len(line) // 2] + line[len(line) // 2::-1] + "\n"
-
-        message += f"\nJust a randomly mirrored image.\n-{self.bot_name}"
-        return self.facebook_helper.upload_photo(image_file, message, self.mirror_photos_album_id)
 
     def get_frame_index_number(self, file_name: str) -> int:
         """
@@ -130,11 +99,12 @@ class SingleVideoFrameBot(Framebot):
         """
         Starts the framebot upload loop.
         """
+        # plugins before upload loop
         for frame in self.frames:
             if frame.number <= self.last_frame_uploaded.number:
                 continue
 
-            # advance bests
+            # plugins before upload
 
             self.logger.info(f"Uploading frame {frame.number} of {self.total_frames_number}...")
 
@@ -145,15 +115,13 @@ class SingleVideoFrameBot(Framebot):
                 self.last_frame_uploaded = frame
                 f.write(str(frame.number))
 
-            # queue best of
-            if self.mirroring_enabled and random() > (1 - self.mirroring_ratio / 100):
-                self.logger.info("Posting mirrored frame...")
-                self.post_mirror_frame(frame.local_file, frame.message)
             self.logger.info(f"Uploaded. Waiting {self.upload_interval} seconds before the next one...")
+            # plugins after upload
+
             if self.delete_files:
                 os.remove(frame.local_file)
             time.sleep(self.upload_interval)
 
-        # finish uploading best ofs
+        # plugins after upload loop
         if os.path.exists(LAST_FRAME_UPLOADED_FILE):
             os.remove(LAST_FRAME_UPLOADED_FILE)

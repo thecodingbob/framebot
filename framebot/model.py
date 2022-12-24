@@ -44,18 +44,12 @@ class FacebookReactionsTotal(RemoteValue[int]):
     pass
 
 
-class Frame(object):
+class FacebookFrame(object):
 
     def __init__(self, number: int, local_file: Union[str | Path]):
         self.number: int = number
         self.local_file: Path = local_file if type(local_file) is Path else Path(local_file)
         self.status: FrameStatus = FrameStatus.WAITING
-
-
-class FacebookFrame(Frame):
-
-    def __init__(self, number: int, local_file: Union[str | Path]):
-        super().__init__(number, local_file)
         self._post_id: Optional[str] = None
         self.story_id: Optional[str] = None
         self._url: Optional[str] = None
@@ -80,14 +74,3 @@ class FacebookFrame(Frame):
         self._post_id = post_id
         self._url = f"https://facebook.com/{post_id}"
         self._post_time = datetime.now()
-
-
-class FrameEncoder(JSONEncoder):
-    def default(self, o: Any) -> Any:
-        if isinstance(o, Frame):
-            return o.__dict__
-        if isinstance(o, Path):
-            return str(o)
-        if isinstance(o, FrameStatus):
-            return ""
-        return super().default(o)
