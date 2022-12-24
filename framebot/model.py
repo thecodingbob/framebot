@@ -6,7 +6,9 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Union, Optional, TypeVar, Generic, Any
+from typing import Union, Optional, TypeVar, Generic, Any, Callable
+
+from social import FacebookHelper
 
 T = TypeVar("T")
 
@@ -21,27 +23,30 @@ class RemoteValue(Generic[T]):
     """
     Value to be fetched remotely.
     """
-    def __init__(self):
+    def __init__(self, fetcher: Callable[[], T]):
+        """
+        Constructor
+        :param fetcher: function used to fetch the value when needed
+        """
         self._value: Optional[T] = None
         self._last_updated: Optional[datetime] = None
+        self._fetcher = fetcher
 
     @property
     def value(self) -> T:
         """
-        The object's value. Raises an exception if the object wasn't ever set.
+        The object's value. Triggers the fetcher if the value was never set.
         :return: the object value
         """
-        if not self.has_value():
-            raise AttributeError
+        if self._value is None:
+            self.refresh()
         return self._value
 
-    @value.setter
-    def value(self, value: T):
+    def refresh(self):
         """
-        Setter for the object value
-        :param value: the value
+        Refreshes the object value by triggering the fetcher function
         """
-        self._value = value
+        self._value = self._fetcher
         self._last_updated = datetime.now()
 
     @property
@@ -52,26 +57,40 @@ class RemoteValue(Generic[T]):
         """
         return self._last_updated
 
-    def has_value(self):
+
+class FacebookStoryId(RemoteValue[str]):
+    """
+    Represents the story id for a Facebook post.
+    """
+    def __init__(self, post_id: str, facebook_helper: FacebookHelper):
         """
-        checks if value has ever be fetched
-        :return: true if there is a value, false otherwise
+        Constructor
+        :param post_id: the post id
+        :param facebook_helper: helper to gather data from Facebook
         """
-        return self._value is not None
+        self.post_id = post_id
+        super().__init__(lambda p_id: facebook_helper.get_story_id(self.post_id))
 
 
 class FacebookReactionsTotal(RemoteValue[int]):
     """
-    Wrapper for containing a post's reaction number
+    Reactions count for a facebook post
     """
-    pass
+    def __init__(self, story_id: FacebookStoryId, facebook_helper: FacebookHelper):
+        """
+        Constructor
+        :param story_id: the post story id
+        :param facebook_helper: helper to gather data from Facebook
+        """
+        self.story_id = story_id
+        super().__init__(lambda s_id: facebook_helper.get_reactions_total_count(self.story_id.value))
 
 
 class FacebookFrame(object):
     """
     Object representing a Facebook frame (image)
     """
-    def __init__(self, number: int, local_file: Union[str | Path]):
+    def __init__(self, number: int, local_file: Union[str | Path], facebook_helper: FacebookHelper):
         """
         Constructor
         :param number: the frame number
@@ -81,11 +100,12 @@ class FacebookFrame(object):
         self.local_file: Path = local_file if type(local_file) is Path else Path(local_file)
         self.status: FrameStatus = FrameStatus.WAITING
         self._post_id: Optional[str] = None
-        self.story_id: Optional[str] = None
+        self._story_id: Optional[FacebookStoryId] = None
         self._url: Optional[str] = None
         self.text = Optional[str] = None
         self._post_time: Optional[datetime] = None
-        self.reactions_total: FacebookReactionsTotal = FacebookReactionsTotal()
+        self._reactions_total: Optional[FacebookReactionsTotal] = None
+        self.facebook_helper = facebook_helper
 
     @property
     def post_id(self) -> Optional[str]:
@@ -111,14 +131,26 @@ class FacebookFrame(object):
         """
         return self._post_time
 
+    @property
+    def story_id(self) -> Optional[str]:
+        if self._story_id is None:
+            return None
+        return self._story_id.value
+
+    @property
+    def reactions_total(self) -> Optional[int]:
+        if self._reactions_total is None:
+            return None
+        return self._reactions_total.value
+
     def mark_as_posted(self, post_id: str):
         """
-        Marks a frame as posted and assings values to post id, url and post time
+        Marks a frame as posted and assings values to post id, url, post time, story id and reactions total
         :param post_id: the post id
         """
         self.status = FrameStatus.POSTED
         self._post_id = post_id
         self._url = f"https://facebook.com/{post_id}"
         self._post_time = datetime.now()
-
-
+        self._story_id = FacebookStoryId(post_id=post_id, facebook_helper=self.facebook_helper)
+        self._reactions_total = FacebookReactionsTotal(story_id=self._story_id, facebook_helper=self.facebook_helper)

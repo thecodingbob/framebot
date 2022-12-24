@@ -83,7 +83,7 @@ class SimpleFrameBot(Framebot):
         Initializes the frames list and total frames number
         """
         self.frames: List[FacebookFrame] = [
-            FacebookFrame(self._get_frame_index_number(frame_path), frame_path)
+            FacebookFrame(self._get_frame_index_number(frame_path), frame_path, facebook_helper=self.facebook_helper)
             for frame_path in glob(os.path.join(self.frames_directory, f"*.{self.frames_ext}"))
         ]
         self.frames.sort(key=lambda frame: frame.number)

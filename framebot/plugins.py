@@ -141,12 +141,10 @@ class BestOfReposter(FramebotPlugin):
                     checked_all = True
                 else:
                     self.logger.info(f"Checking entry {frame_to_check}...")
-                    frame_to_check.story_id = self.facebook_helper.get_story_id(frame_to_check.post_id)
-                    frame_to_check.reactions = self.facebook_helper.get_reactions_total_count(frame_to_check.story_id)
-                    if frame_to_check.reactions > self.reactions_threshold:
+                    if frame_to_check.reactions_total > self.reactions_threshold:
                         self.logger.info(f"Uploading frame {frame_to_check.local_file} to best of album...")
                         message = f"Reactions after {elapsed_time.total_seconds() // 3600} hours : " \
-                                  f"{frame_to_check.reactions}.\n" + \
+                                  f"{frame_to_check.reactions_total}.\n" + \
                                   f"Original post: {frame_to_check.url}\n\n" + \
                                   frame_to_check.text
                         if os.path.exists(frame_to_check.local_file):
@@ -155,7 +153,7 @@ class BestOfReposter(FramebotPlugin):
                                             os.path.join(self.album_path,
                                                          f"Frame {frame_to_check.number} "
                                                          f"id {frame_to_check.story_id} "
-                                                         f"reactions {frame_to_check.reactions}"))
+                                                         f"reactions {frame_to_check.reactions_total}"))
                         else:
                             self.logger.info(f"File {frame_to_check.local_file} is missing. Skipping uploading to best "
                                              f"of album...")
