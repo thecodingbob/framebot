@@ -2,9 +2,10 @@ import configparser
 import os
 import platform
 import sys
+from datetime import timedelta
 
 from framebot.framebots import SingleVideoFrameBot
-from plugins import BestOfReposter
+from plugins import BestOfReposter, MirroredFramePoster
 from social import FacebookHelper
 
 config = configparser.ConfigParser()
@@ -63,12 +64,22 @@ print(
     f"\nThe bot will try to post a frame every {upload_interval} seconds and will "
     f"{'' if delete_files else 'not '}delete those after it's done.\n")
 facebook_helper = FacebookHelper(access_token=access_token, page_id=page_id)
-bot = SingleVideoFrameBot(facebook_helper=facebook_helper, video_title=movie_title,
-                          mirror_photos_album_id=mirror_album_id,
-                          upload_interval=upload_interval, mirroring_enabled=mirroring_enabled,
-                          mirroring_ratio=mirroring_ratio, delete_files=delete_files, bot_name=bot_name,
-                          frames_ext=frames_ext,
-                          frames_directory=frames_directory, frames_naming=frames_naming)
 
-bot.start_upload()
-plugin = BestOfReposter(album_id="1", facebook_helper=facebook_helper, video_title=movie_title)
+plugins = []
+if best_of_reposting_enabled:
+    plugins.append(BestOfReposter(
+        album_id=best_of_album_id, facebook_helper=facebook_helper, video_title=movie_title,
+        reactions_threshold=reactions_threshold, time_threshold=timedelta(hours=wait_hours))
+    )
+if mirroring_enabled:
+    plugins.append(
+        MirroredFramePoster(album_id=mirror_album_id, facebook_helper=facebook_helper,
+                            bot_name=bot_name, ratio=mirroring_ratio)
+    )
+
+bot = SingleVideoFrameBot(facebook_helper=facebook_helper, video_title=movie_title,
+                          upload_interval=upload_interval, delete_files=delete_files, bot_name=bot_name,
+                          frames_ext=frames_ext,
+                          frames_directory=frames_directory, frames_naming=frames_naming, plugins=plugins)
+
+bot.start()

@@ -14,13 +14,13 @@ import utils
 from pathlib import Path
 import os
 
-from model import Frame, FacebookFrame
+from model import FacebookFrame
 from social import FacebookHelper
 
 
-class FrameBotPlugin(utils.LoggingObject):
+class FramebotPlugin(utils.LoggingObject):
 
-    def __init__(self, depends_on: List[Type[FrameBotPlugin]] = None, local_directory: Path = None):
+    def __init__(self, depends_on: List[Type[FramebotPlugin]] = None, local_directory: Path = None):
         super().__init__()
         class_name = type(self).__name__
         self.logger.info(f"Initializing plugin {class_name}")
@@ -28,24 +28,24 @@ class FrameBotPlugin(utils.LoggingObject):
             depends_on = []
         if local_directory is None:
             local_directory = Path("plugins").joinpath(class_name)
-        self.depends_on: List[Type[FrameBotPlugin]] = depends_on
+        self.depends_on: List[Type[FramebotPlugin]] = depends_on
         self.local_directory: Path = local_directory
-        self.dependencies: Dict[FrameBotPlugin] = {}
+        self.dependencies: Dict[FramebotPlugin] = {}
 
     def before_upload_loop(self) -> None:
-        pass
+        self.logger.debug(f"No operation defined for 'before_upload_loop'")
 
     def after_upload_loop(self) -> None:
-        pass
+        self.logger.debug(f"No operation defined for 'after_upload_loop'")
 
-    def before_frame_upload(self, frame: Frame) -> None:
-        pass
+    def before_frame_upload(self, frame: FacebookFrame) -> None:
+        self.logger.debug(f"No operation defined for 'before_frame_upload'")
 
     def after_frame_upload(self, frame: FacebookFrame) -> None:
-        pass
+        self.logger.debug(f"No operation defined for 'after_frame_upload'")
 
 
-class BestOfReposter(FrameBotPlugin):
+class BestOfReposter(FramebotPlugin):
 
     def __init__(self, facebook_helper: FacebookHelper, album_id: str,
                  video_title: str, reactions_threshold: int = 50,
@@ -150,7 +150,7 @@ class BestOfReposter(FrameBotPlugin):
     def before_upload_loop(self) -> None:
         self._check_for_existing_status()
 
-    def before_frame_upload(self, frame: Frame) -> None:
+    def before_frame_upload(self, frame: FacebookFrame) -> None:
         self._advance_bests()
 
     def after_frame_upload(self, frame: FacebookFrame) -> None:
@@ -160,7 +160,7 @@ class BestOfReposter(FrameBotPlugin):
         self._handle_quicker()
 
 
-class MirroredFramePoster(FrameBotPlugin):
+class MirroredFramePoster(FramebotPlugin):
 
     def __init__(self, facebook_helper: FacebookHelper, album_id: str, ratio: float = 0.5,
                  bot_name: str = "MirrorBot", mirror_original_message: bool = True,
