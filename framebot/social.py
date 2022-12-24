@@ -1,3 +1,6 @@
+"""
+Contains helper methods and classes for social media upload and data gathering
+"""
 import time
 from io import BytesIO
 from pathlib import Path
@@ -6,11 +9,12 @@ from typing import Union
 import facebook
 
 import utils
-from model import FacebookFrame
 
 
 class FacebookHelper(utils.LoggingObject):
-
+    """
+    Helper to interact with the Facebook Graph API
+    """
     def __init__(self, access_token: str, page_id: str):
         """
         Constructor
@@ -61,8 +65,18 @@ class FacebookHelper(utils.LoggingObject):
         return page_post_id
 
     def get_story_id(self, post_id: str) -> str:
+        """
+        Returns the story id for a given post. Useful to get reactions.
+        :param post_id: the post id
+        :return: the story id
+        """
         return self.graph.get_object(post_id, fields="page_story_id")["page_story_id"]
 
-    def get_reactions(self, story_id: str) -> int:
+    def get_reactions_total_count(self, story_id: str) -> int:
+        """
+        Gathers the total reactions count for a post
+        :param story_id: the post's story id
+        :return: the total reaction count
+        """
         return self.graph.get_object(id=story_id, fields="reactions.summary(total_count)")["reactions"][
             "summary"]["total_count"]

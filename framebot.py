@@ -4,7 +4,7 @@ import platform
 import sys
 from datetime import timedelta
 
-from framebot.framebots import SingleVideoFrameBot
+from framebot.framebots import SimpleFrameBot
 from plugins import BestOfReposter, MirroredFramePoster
 from social import FacebookHelper
 
@@ -77,9 +77,9 @@ if mirroring_enabled:
                             bot_name=bot_name, ratio=mirroring_ratio)
     )
 
-bot = SingleVideoFrameBot(facebook_helper=facebook_helper, video_title=movie_title,
-                          upload_interval=upload_interval, delete_files=delete_files, bot_name=bot_name,
-                          frames_ext=frames_ext,
-                          frames_directory=frames_directory, frames_naming=frames_naming, plugins=plugins)
+bot = SimpleFrameBot(facebook_helper=facebook_helper, video_title=movie_title,
+                     upload_interval=upload_interval, delete_files=delete_files, bot_name=bot_name,
+                     frames_ext=frames_ext,
+                     frames_directory=frames_directory, frames_naming=frames_naming, plugins=plugins)
 
 bot.start()

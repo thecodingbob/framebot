@@ -1,3 +1,6 @@
+"""
+Contains framebots implementations
+"""
 import os
 import re
 import time
@@ -18,19 +21,31 @@ def _remove_last_frame_uploaded_file():
 
 
 def get_filename(full_path: str):
+    """
+
+    :param full_path:
+    :return:
+    """
     return full_path[full_path.rfind(os.path.sep) + 1:]
 
 
 # placeholder
 class Framebot(utils.LoggingObject):
+    """
+    Placeholder class for later extension
+    """
     pass
 
 
-class SingleVideoFrameBot(Framebot):
+class SimpleFrameBot(Framebot):
+    """
+    Uploads frames from a fixed directory
+    """
     def __init__(self, facebook_helper: FacebookHelper, video_title: str, frames_directory: str = "frames",
                  frames_ext: str = "jpg", frames_naming: str = "$N$", upload_interval: int = 150, bot_name: str = "Bot",
                  delete_files: bool = False, plugins: List[FramebotPlugin] = None):
         """"
+        :param facebook_helper: Helper to gather data and post it to Facebook
         :param video_title: Title of the movie/episode/whatever you want to post. Will be showed in the posts
             description
         :param frames_directory: Directory where the frame files are stored
@@ -39,6 +54,7 @@ class SingleVideoFrameBot(Framebot):
         :param upload_interval: time interval between one frame and the other, in seconds
         :param bot_name: bot's name, currently used only in the mirrored posts
         :param delete_files: if this flag is enabled, the frame files will be deleted after those served their purpose
+        :param plugins: plugins to extend the bot's functionalities
         """
         super().__init__()
         self.facebook_helper = facebook_helper
@@ -62,7 +78,10 @@ class SingleVideoFrameBot(Framebot):
         self._log_parameters()
         self.logger.info("Done initializing.")
 
-    def _init_frames(self):
+    def _init_frames(self) -> None:
+        """
+        Initializes the frames list and total frames number
+        """
         self.frames: List[FacebookFrame] = [
             FacebookFrame(self._get_frame_index_number(frame_path), frame_path)
             for frame_path in glob(os.path.join(self.frames_directory, f"*.{self.frames_ext}"))
@@ -74,8 +93,10 @@ class SingleVideoFrameBot(Framebot):
             self.total_frames_number = self.frames[-1].number
         self.logger.info(f"Found {len(self.frames)} frames.")
 
-    def _init_status(self):
-        # Last frame uploaded or fresh start
+    def _init_status(self) -> None:
+        """
+        Check if stored status exists and loads it
+        """
         if os.path.exists(LAST_FRAME_UPLOADED_FILE):
             with open(LAST_FRAME_UPLOADED_FILE) as f:
                 self.last_frame_uploaded = int(f.read())
@@ -83,7 +104,10 @@ class SingleVideoFrameBot(Framebot):
         else:
             self.logger.info(f"Starting the bot from the first frame.")
 
-    def _log_parameters(self):
+    def _log_parameters(self) -> None:
+        """
+        Logs the loaded bot parameters
+        """
         self.logger.info(f"Starting bot '{self.bot_name}'.")
         self.logger.info(f"Movie/video title is '{self.video_title}'.")
         self.logger.info(f"A frame will be posted every {self.upload_interval} seconds.")
@@ -109,14 +133,18 @@ class SingleVideoFrameBot(Framebot):
         """
         return f"{self.video_title}\nFrame {frame_number} of {self.total_frames_number}"
 
-    def _update_last_frame_uploaded(self, number: int):
+    def _update_last_frame_uploaded(self, number: int) -> None:
+        """
+        Stores the last uploaded frame number into a file for later resuming
+        :param number: the latest frame uploaded's index number
+        """
         with open(LAST_FRAME_UPLOADED_FILE, "w") as f:
             self.last_frame_uploaded = number
             f.write(str(number))
 
     def start(self) -> None:
         """
-        Starts the framebot upload loop.
+        Starts the framebot.
         """
         for plugin in self.plugins:
             plugin.before_upload_loop()
@@ -126,6 +154,9 @@ class SingleVideoFrameBot(Framebot):
         _remove_last_frame_uploaded_file()
 
     def _upload_loop(self) -> None:
+        """
+        The frame upload loop
+        """
         for frame in self.frames:
             if frame.number <= self.last_frame_uploaded:
                 continue
@@ -140,6 +171,10 @@ class SingleVideoFrameBot(Framebot):
             time.sleep(self.upload_interval)
 
     def _upload_frame(self, frame: FacebookFrame) -> None:
+        """
+        Uploads a single frame
+        :param frame: the frame to be uploaded
+        """
         self.logger.info(f"Uploading frame {frame.number} of {self.total_frames_number}...")
 
         frame.message = self._get_default_message(frame.number)

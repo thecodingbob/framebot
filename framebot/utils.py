@@ -24,6 +24,11 @@ def safe_json_dump(fpath: Union[str, Path], obj: Any) -> None:
 
 
 def load_obj_from_json_file(fpath: Union[str, Path]) -> Any:
+    """
+
+    :param fpath:
+    :return:
+    """
     with open(fpath, "r") as f:
         str_result = f.read()
         result = jsonpickle.decode(str_result)
@@ -31,6 +36,12 @@ def load_obj_from_json_file(fpath: Union[str, Path]) -> Any:
 
 
 def get_logger(name: str, level: int = logging.INFO) -> Logger:
+    """
+
+    :param name:
+    :param level:
+    :return:
+    """
     logger = Logger(name)
     logger.setLevel(level)
     handler = logging.StreamHandler(sys.stdout)
@@ -41,6 +52,9 @@ def get_logger(name: str, level: int = logging.INFO) -> Logger:
 
 
 class LoggingObject(object):
+    """
+    Object that comes equipped with a logger
+    """
     logger: Logger
 
     def __init__(self):

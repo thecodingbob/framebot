@@ -1,3 +1,6 @@
+"""
+Contains implementations for framebot plugins
+"""
 from __future__ import annotations
 
 import copy
@@ -19,8 +22,17 @@ from social import FacebookHelper
 
 
 class FramebotPlugin(utils.LoggingObject):
-
+    """
+    A plugin to inject custom extra behavior into a framebot. It has handles for before and after the upload loop
+    and the single frame posting
+    """
     def __init__(self, depends_on: List[Type[FramebotPlugin]] = None, local_directory: Path = None):
+        """
+        Constructor
+        :param depends_on: Signals this plugin depends on other plugins and thus it cannot be used without these,
+        and also must act after its dependencies. Behavior for this is yet to be implemented.
+        :param local_directory: Local working directory for the plugin
+        """
         super().__init__()
         class_name = type(self).__name__
         self.logger.info(f"Initializing plugin {class_name}")
@@ -32,26 +44,56 @@ class FramebotPlugin(utils.LoggingObject):
         self.local_directory: Path = local_directory
         self.dependencies: Dict[FramebotPlugin] = {}
 
+        os.makedirs(self.local_directory, exist_ok=True)
+
     def before_upload_loop(self) -> None:
+        """
+        Behavior to be executed before the upload loop starts.
+        """
         self.logger.debug(f"No operation defined for 'before_upload_loop'")
 
     def after_upload_loop(self) -> None:
+        """
+        Behavior to be executed after the upload loop ends.
+        """
         self.logger.debug(f"No operation defined for 'after_upload_loop'")
 
     def before_frame_upload(self, frame: FacebookFrame) -> None:
+        """
+        Behavior to be executed before a frame is uploaded
+        :param frame: the frame to be uploaded
+        """
         self.logger.debug(f"No operation defined for 'before_frame_upload'")
 
     def after_frame_upload(self, frame: FacebookFrame) -> None:
+        """
+        Behavior to be executed after a frame is uploaded
+        :param frame: the uploaded frame
+        """
         self.logger.debug(f"No operation defined for 'after_frame_upload'")
 
 
 class BestOfReposter(FramebotPlugin):
-
+    """
+    Reposts frames that had a reaction count over a certain threshold, after a defined time threshold from the first
+    post.
+    """
     def __init__(self, facebook_helper: FacebookHelper, album_id: str,
                  video_title: str, reactions_threshold: int = 50,
                  time_threshold: timedelta = timedelta(days=1),
                  yet_to_check_file: str = "bofc.json",
                  store_best_ofs: bool = True):
+        """
+        Constructor
+        :param facebook_helper: Helper to gather data and post it to Facebook
+        :param album_id: Facebook album id where to repost best of frames
+        :param video_title: Move/video title for the frames
+        :param reactions_threshold: Threshold determining which frames should be reposted
+        :param time_threshold: Time after which a frame's reactions count can be compared with the threshold and
+        reposted
+        :param yet_to_check_file: file where the queued frames data will be stored for later restarts
+        :param store_best_ofs: determines if the best of frames should also be stored locally for later use
+        """
         super().__init__()
         self.facebook_helper: FacebookHelper = facebook_helper
         self.album_id: str = album_id
@@ -71,11 +113,13 @@ class BestOfReposter(FramebotPlugin):
                          f"{self.time_threshold} time threshold.")
         self.logger.info(f"Best ofs will be saved locally in the directory '{self.album_path}' and "
                          f"reuploaded in the album with id {self.album_id}.")
-        os.makedirs(self.local_directory, exist_ok=True)
         os.makedirs(self.album_path, exist_ok=True)
         os.makedirs(self.frames_dir, exist_ok=True)
 
     def _check_for_existing_status(self) -> None:
+        """
+        Checks if a status file already exists in the local file system, and loads it if so.
+        """
         if os.path.exists(self.yet_to_check_file):
             self.logger.info(f"Found existing {self.yet_to_check_file} file for best of checks, "
                              f"trying to load it...")
@@ -98,7 +142,7 @@ class BestOfReposter(FramebotPlugin):
                 else:
                     self.logger.info(f"Checking entry {frame_to_check}...")
                     frame_to_check.story_id = self.facebook_helper.get_story_id(frame_to_check.post_id)
-                    frame_to_check.reactions = self.facebook_helper.get_reactions(frame_to_check.story_id)
+                    frame_to_check.reactions = self.facebook_helper.get_reactions_total_count(frame_to_check.story_id)
                     if frame_to_check.reactions > self.reactions_threshold:
                         self.logger.info(f"Uploading frame {frame_to_check.local_file} to best of album...")
                         message = f"Reactions after {elapsed_time.total_seconds() // 3600} hours : " \
@@ -128,6 +172,10 @@ class BestOfReposter(FramebotPlugin):
         self.logger.info("Done checking for best-ofs.")
 
     def _queue_frame_for_check(self, frame: FacebookFrame) -> None:
+        """
+        Adds a frame data to the queue for later checking
+        :param frame: the frame to be queued
+        """
         self.logger.info(f"Queueing frame {frame.number} for best of checking...")
         # copy frame to temp dir
         frame = copy.copy(frame)
@@ -138,6 +186,10 @@ class BestOfReposter(FramebotPlugin):
         utils.safe_json_dump(self.yet_to_check_file, self.yet_to_check)
 
     def _handle_quicker(self) -> None:
+        """
+        Halves the time threshold and starts a loop to check the remaining frames. Used after the framebot has
+        finished posting.
+        """
         self.time_threshold /= 2
         while self.yet_to_check:
             self._advance_bests()
@@ -161,10 +213,21 @@ class BestOfReposter(FramebotPlugin):
 
 
 class MirroredFramePoster(FramebotPlugin):
-
+    """
+    Randomly mirrors and posts a frame with a random chance.
+    """
     def __init__(self, facebook_helper: FacebookHelper, album_id: str, ratio: float = 0.5,
                  bot_name: str = "MirrorBot", mirror_original_message: bool = True,
                  extra_message: str = None):
+        """
+        Constructor.
+        :param facebook_helper: Helper to gather data and post it to Facebook
+        :param album_id: The Facebook album where to post mirrored photos
+        :param ratio: The percentage a frame has to be reposted mirrored
+        :param bot_name: The bot's name. Used in the default extra message.
+        :param mirror_original_message: Also mirrors the original text message along with the image.
+        :param extra_message: Message to attach to the frame. Default adds the bot's name as a sort of signature.
+        """
         super().__init__()
         self.facebook_helper: FacebookHelper = facebook_helper
         self.album_id: str = album_id
