@@ -14,7 +14,7 @@ def safe_json_dump(fpath: Union[str, Path], obj: Any) -> None:
     :param fpath: path where the json has to be saved
     :param obj: the content to be saved
     """
-    if type(fpath) is Path:
+    if issubclass(type(fpath), Path):
         fpath = str(fpath)
     safe_path = fpath + "_safe"
     with open(safe_path, "w") as f:
@@ -42,6 +42,8 @@ def get_logger(name: str, level: int = logging.INFO) -> Logger:
     :param level:
     :return:
     """
+    if name is None or level is None:
+        raise ValueError("name and level must not be None!")
     logger = Logger(name)
     logger.setLevel(level)
     handler = logging.StreamHandler(sys.stdout)
