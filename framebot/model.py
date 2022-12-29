@@ -4,19 +4,12 @@ Contains data classes definitions
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
 from typing import Union, Optional, TypeVar, Generic, Any, Callable
 
 from social import FacebookHelper
 
 T = TypeVar("T")
-
-
-class FrameStatus(Enum):
-    WAITING = 1
-    POSTED = 2
-    ERROR = 3
 
 
 class RemoteValue(Generic[T]):
@@ -46,7 +39,7 @@ class RemoteValue(Generic[T]):
         """
         Refreshes the object value by triggering the fetcher function
         """
-        self._value = self._fetcher
+        self._value = self._fetcher()
         self._last_updated = datetime.now()
 
     @property
@@ -69,7 +62,7 @@ class FacebookStoryId(RemoteValue[str]):
         :param facebook_helper: helper to gather data from Facebook
         """
         self.post_id = post_id
-        super().__init__(lambda p_id: facebook_helper.get_story_id(self.post_id))
+        super().__init__(lambda: facebook_helper.get_story_id(self.post_id))
 
 
 class FacebookReactionsTotal(RemoteValue[int]):
@@ -83,7 +76,7 @@ class FacebookReactionsTotal(RemoteValue[int]):
         :param facebook_helper: helper to gather data from Facebook
         """
         self.story_id = story_id
-        super().__init__(lambda s_id: facebook_helper.get_reactions_total_count(self.story_id.value))
+        super().__init__(lambda: facebook_helper.get_reactions_total_count(self.story_id.value))
 
 
 class FacebookFrame(object):
@@ -98,11 +91,10 @@ class FacebookFrame(object):
         """
         self.number: int = number
         self.local_file: Path = local_file if type(local_file) is Path else Path(local_file)
-        self.status: FrameStatus = FrameStatus.WAITING
         self._post_id: Optional[str] = None
         self._story_id: Optional[FacebookStoryId] = None
         self._url: Optional[str] = None
-        self.text = Optional[str] = None
+        self.text: Optional[str] = None
         self._post_time: Optional[datetime] = None
         self._reactions_total: Optional[FacebookReactionsTotal] = None
         self.facebook_helper = facebook_helper
@@ -148,7 +140,8 @@ class FacebookFrame(object):
         Marks a frame as posted and assings values to post id, url, post time, story id and reactions total
         :param post_id: the post id
         """
-        self.status = FrameStatus.POSTED
+        if post_id is None:
+            raise ValueError("Post id for a posted frame can't be None!")
         self._post_id = post_id
         self._url = f"https://facebook.com/{post_id}"
         self._post_time = datetime.now()
