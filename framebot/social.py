@@ -2,6 +2,7 @@
 Contains helper methods and classes for social media upload and data gathering
 """
 import time
+from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
 from typing import Union
@@ -15,6 +16,7 @@ class FacebookHelper(utils.LoggingObject):
     """
     Helper to interact with the Facebook Graph API
     """
+
     def __init__(self, access_token: str, page_id: str):
         """
         Constructor
@@ -28,9 +30,12 @@ class FacebookHelper(utils.LoggingObject):
 
         self.logger.info(f"Initialized GraphAPI for Facebook. Page id is {self.page_id}.")
 
-    def upload_photo(self, image: Union[Path, str, BytesIO], message: str, album: str = None) -> str:
+    def upload_photo(self, image: Union[Path, str, BytesIO], message: str, album: str = None,
+                     max_retries: int = 5, retry_time: timedelta = timedelta(minutes=3)) -> str:
         """
         Uploads a photo to a specific album, or to the news feed if no album id is specified.
+        :param retry_time: time to wait if a failure occurs, before the next retry
+        :param max_retries: max number of retries before giving up
         :param image: The image to be posted. Could be a path to an image file or a BytesIO object containing the image
         data
         :param message: The message used as image description
@@ -43,7 +48,7 @@ class FacebookHelper(utils.LoggingObject):
         retry_count = 0
         while not uploaded:
             try:
-                if type(image) in [str, Path]:
+                if issubclass(type(image), (str, Path)):
                     with open(image, "rb") as im:
                         page_post_id = self.graph.put_photo(image=im, message=message, album_path=album + "/photos")[
                             'id']
@@ -52,15 +57,15 @@ class FacebookHelper(utils.LoggingObject):
                         self.graph.put_photo(image=image.getvalue(), message=message, album_path=album + "/photos")[
                             'id']
                 uploaded = True
-            except Exception as e:
+            except facebook.GraphAPIError as e:
                 self.logger.warning("Exception occurred during photo upload.", exc_info=True)
-                if retry_count < 5:
-                    self.logger.warning("Retrying photo upload...")
-                    time.sleep(60 * 30 if "spam" in str(e) else 180)
+                if retry_count < max_retries:
+                    retry_secs = retry_time.total_seconds() if "spam" not in str(e) else retry_time.total_seconds() * 10
+                    self.logger.warning(f"Retrying photo upload after {retry_secs} seconds.")
+                    time.sleep(retry_secs)
                 else:
-                    self.logger.error("Unable to post even after several retries. Check what's happening. Bot is"
-                                      " shutting down.")
-                    exit()
+                    self.logger.error("Unable to post even after several retries. Check what's happening.")
+                    raise e
                 retry_count += 1
         return page_post_id
 
