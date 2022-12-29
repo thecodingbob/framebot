@@ -59,8 +59,8 @@ class TestFacebookHelper(TestCase):
         self._test_upload_photo(DUMMY_IMAGE, max_retries=max_retries, retry_time=retry_time,
                                 expected_calls=2)
 
-    def _test_upload_photo(self, src_image: Union[Path, str, BytesIO], album_id=None, max_retries=0, retry_time=
-    timedelta(), expected_calls=1):
+    def _test_upload_photo(self, src_image: Union[Path, str, BytesIO], album_id=None, max_retries=0,
+                           retry_time=timedelta(), expected_calls=1):
         mock_method: MagicMock = self.mock_graph.put_photo
         mock_method.return_value = {'id': POST_ID}
 
