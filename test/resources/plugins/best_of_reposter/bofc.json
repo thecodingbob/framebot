@@ -1,0 +1,146 @@
+[
+    {
+        "py/object": "model.FacebookFrame",
+        "number": 2,
+        "local_file": {
+            "py/reduce": [
+                {
+                    "py/type": "pathlib.WindowsPath"
+                },
+                {
+                    "py/tuple": [
+                        "plugins",
+                        "BestOfReposter",
+                        "best-of-test",
+                        "frames_to_check",
+                        "dummy.jpg"
+                    ]
+                }
+            ]
+        },
+        "_post_id": "id1",
+        "_story_id": {
+            "py/object": "model.FacebookStoryId",
+            "post_id": "id1",
+            "_value": null,
+            "_last_updated": null
+        },
+        "_url": "https://facebook.com/id1",
+        "text": "Message 1",
+        "_post_time": {
+            "py/object": "datetime.datetime",
+            "__reduce__": [
+                {
+                    "py/type": "datetime.datetime"
+                },
+                [
+                    "B+YMHg4AMgj3qA=="
+                ]
+            ]
+        },
+        "_reactions_total": {
+            "py/object": "model.FacebookReactionsTotal",
+            "story_id": {
+                "py/id": 3
+            },
+            "_value": null,
+            "_last_updated": null
+        }
+    },
+    {
+        "py/object": "model.FacebookFrame",
+        "number": 3,
+        "local_file": {
+            "py/reduce": [
+                {
+                    "py/type": "pathlib.WindowsPath"
+                },
+                {
+                    "py/tuple": [
+                        "plugins",
+                        "BestOfReposter",
+                        "best-of-test",
+                        "frames_to_check",
+                        "dummy.jpg"
+                    ]
+                }
+            ]
+        },
+        "_post_id": "id2",
+        "_story_id": {
+            "py/object": "model.FacebookStoryId",
+            "post_id": "id2",
+            "_value": null,
+            "_last_updated": null
+        },
+        "_url": "https://facebook.com/id2",
+        "text": "Message 2",
+        "_post_time": {
+            "py/object": "datetime.datetime",
+            "__reduce__": [
+                {
+                    "py/type": "datetime.datetime"
+                },
+                [
+                    "B+YMHg4AMwj4ag=="
+                ]
+            ]
+        },
+        "_reactions_total": {
+            "py/object": "model.FacebookReactionsTotal",
+            "story_id": {
+                "py/id": 8
+            },
+            "_value": null,
+            "_last_updated": null
+        }
+    },
+    {
+        "py/object": "model.FacebookFrame",
+        "number": 4,
+        "local_file": {
+            "py/reduce": [
+                {
+                    "py/type": "pathlib.WindowsPath"
+                },
+                {
+                    "py/tuple": [
+                        "plugins",
+                        "BestOfReposter",
+                        "best-of-test",
+                        "frames_to_check",
+                        "dummy.jpg"
+                    ]
+                }
+            ]
+        },
+        "_post_id": "id3",
+        "_story_id": {
+            "py/object": "model.FacebookStoryId",
+            "post_id": "id3",
+            "_value": null,
+            "_last_updated": null
+        },
+        "_url": "https://facebook.com/id3",
+        "text": "Message 3",
+        "_post_time": {
+            "py/object": "datetime.datetime",
+            "__reduce__": [
+                {
+                    "py/type": "datetime.datetime"
+                },
+                [
+                    "B+YMHg4ANAkSIQ=="
+                ]
+            ]
+        },
+        "_reactions_total": {
+            "py/object": "model.FacebookReactionsTotal",
+            "story_id": {
+                "py/id": 13
+            },
+            "_value": null,
+            "_last_updated": null
+        }
+    }
+]

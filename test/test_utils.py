@@ -34,7 +34,6 @@ class TestUtils(unittest.TestCase):
             read_obj = jsonpickle.decode(read_obj)
             self.assertEqual(read_obj, test_obj)
 
-
     def test_get_logger(self):
         logger_name = "test_logger"
         level = logging.DEBUG

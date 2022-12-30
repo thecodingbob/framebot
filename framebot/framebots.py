@@ -9,7 +9,7 @@ from typing import List
 
 import utils
 from model import FacebookFrame
-from plugins import FramebotPlugin
+from plugins import FrameBotPlugin
 from social import FacebookHelper
 
 LAST_FRAME_UPLOADED_FILE = "last_frame_uploaded"
@@ -43,7 +43,7 @@ class SimpleFrameBot(Framebot):
     """
     def __init__(self, facebook_helper: FacebookHelper, video_title: str, frames_directory: str = "frames",
                  frames_ext: str = "jpg", frames_naming: str = "$N$", upload_interval: int = 150, bot_name: str = "Bot",
-                 delete_files: bool = False, plugins: List[FramebotPlugin] = None):
+                 delete_files: bool = False, plugins: List[FrameBotPlugin] = None):
         """"
         :param facebook_helper: Helper to gather data and post it to Facebook
         :param video_title: Title of the movie/episode/whatever you want to post. Will be showed in the posts
@@ -71,7 +71,7 @@ class SimpleFrameBot(Framebot):
         self.last_frame_uploaded: int = -1
         if plugins is None:
             plugins = []
-        self.plugins: List[FramebotPlugin] = plugins
+        self.plugins: List[FrameBotPlugin] = plugins
         self._init_frames()
         self._init_status()
 

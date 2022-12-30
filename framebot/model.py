@@ -158,3 +158,13 @@ class FacebookFrame(object):
             return self.__dict__ == o.__dict__
         return NotImplemented
 
+    def __str__(self) -> str:
+        return str({
+            "number": self.number,
+            "local_file": self.local_file,
+            "text": self.text,
+            "post_id": self.post_id,
+            "post_time": self.post_time,
+            "story_id": self.post_id,
+            "reactions_total": self.reactions_total
+                })

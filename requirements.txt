@@ -1,3 +1,4 @@
 facebook_sdk==3.1.0
 Pillow==9.3.0
 jsonpickle==3.0.1
+python-slugify
