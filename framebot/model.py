@@ -50,6 +50,11 @@ class RemoteValue(Generic[T]):
         """
         return self._last_updated
 
+    def __eq__(self, o: object) -> bool:
+        if type(o) is type(self):
+            return self.__dict__ == o.__dict__
+        return NotImplemented
+
 
 class FacebookStoryId(RemoteValue[str]):
     """
@@ -147,3 +152,9 @@ class FacebookFrame(object):
         self._post_time = datetime.now()
         self._story_id = FacebookStoryId(post_id=post_id, facebook_helper=facebook_helper)
         self._reactions_total = FacebookReactionsTotal(story_id=self._story_id, facebook_helper=facebook_helper)
+
+    def __eq__(self, o: object) -> bool:
+        if type(o) is type(self):
+            return self.__dict__ == o.__dict__
+        return NotImplemented
+
