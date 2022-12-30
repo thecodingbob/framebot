@@ -60,7 +60,7 @@ class TestFacebookFrame(unittest.TestCase):
 
     def setUp(self) -> None:
         self.mock_helper = MagicMock()
-        self.testee = FacebookFrame(local_file="dummy.jpg", number=1, facebook_helper=self.mock_helper)
+        self.testee = FacebookFrame(local_file="dummy.jpg", number=1)
 
     def test_story_id(self):
         self.assertIsNone(self.testee.story_id)
@@ -75,7 +75,7 @@ class TestFacebookFrame(unittest.TestCase):
         mock_story_id.return_value = "story_id"
         post_id = "id"
 
-        self.testee.mark_as_posted(post_id)
+        self.testee.mark_as_posted(post_id, facebook_helper=self.mock_helper)
 
         self.assertEqual(post_id, self.testee.post_id)
         self.assertEqual(mock_story_id.return_value, self.testee.story_id)

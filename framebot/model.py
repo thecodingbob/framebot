@@ -83,7 +83,7 @@ class FacebookFrame(object):
     """
     Object representing a Facebook frame (image)
     """
-    def __init__(self, number: int, local_file: Union[str | Path], facebook_helper: FacebookHelper):
+    def __init__(self, number: int, local_file: Union[str | Path]):
         """
         Constructor
         :param number: the frame number
@@ -97,7 +97,6 @@ class FacebookFrame(object):
         self.text: Optional[str] = None
         self._post_time: Optional[datetime] = None
         self._reactions_total: Optional[FacebookReactionsTotal] = None
-        self.facebook_helper = facebook_helper
 
     @property
     def post_id(self) -> Optional[str]:
@@ -135,9 +134,10 @@ class FacebookFrame(object):
             return None
         return self._reactions_total.value
 
-    def mark_as_posted(self, post_id: str):
+    def mark_as_posted(self, post_id: str, facebook_helper: FacebookHelper):
         """
         Marks a frame as posted and assings values to post id, url, post time, story id and reactions total
+        :param facebook_helper: helper to get story id and reaction count
         :param post_id: the post id
         """
         if post_id is None:
@@ -145,5 +145,5 @@ class FacebookFrame(object):
         self._post_id = post_id
         self._url = f"https://facebook.com/{post_id}"
         self._post_time = datetime.now()
-        self._story_id = FacebookStoryId(post_id=post_id, facebook_helper=self.facebook_helper)
-        self._reactions_total = FacebookReactionsTotal(story_id=self._story_id, facebook_helper=self.facebook_helper)
+        self._story_id = FacebookStoryId(post_id=post_id, facebook_helper=facebook_helper)
+        self._reactions_total = FacebookReactionsTotal(story_id=self._story_id, facebook_helper=facebook_helper)
