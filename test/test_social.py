@@ -49,7 +49,7 @@ class TestFacebookHelper(TestCase):
 
         mock_method.side_effect = facebook.GraphAPIError(result=None)
         max_retries = 2
-        retry_time = timedelta(milliseconds=1)
+        retry_time = timedelta()
         self.assertRaises(facebook.GraphAPIError, self.testee.upload_photo, image=DUMMY_IMAGE, message=test_message,
                           max_retries=max_retries, retry_time=retry_time)
         self.assertEqual(max_retries + 1, mock_method.call_count)
