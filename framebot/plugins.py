@@ -135,19 +135,14 @@ class BestOfReposter(FrameBotPlugin):
         Checks if there are frames to repost into the best-of album, and posts those if there are.
         """
         self.logger.info(f"Checking for best of reuploading...")
-        modified = False
         try:
-            while (self._check_and_post(self.yet_to_check[0])) and len(self.yet_to_check) > 0:
+            while len(self.yet_to_check) > 0 and (self._check_and_post(self.yet_to_check[0])):
                 self.yet_to_check.pop(0)
                 utils.safe_json_dump(self.yet_to_check_file, self.yet_to_check)
-                modified = True
         except GraphAPIError:
             self.logger.warning("There was a problem during the check of best-ofs", exc_info=True)
-        finally:
-            if modified:
-                utils.safe_json_dump(self.yet_to_check_file, self.yet_to_check)
         self.logger.info("Done checking for best-ofs.")
-        
+
     def _check_and_post(self, frame: FacebookFrame) -> bool:
         """
         Checks if the time threshold time has passed, then checks the reactions count against the threshold,
@@ -159,24 +154,22 @@ class BestOfReposter(FrameBotPlugin):
         if elapsed_time < self.time_threshold:
             return False
         self.logger.info(f"Checking entry {frame}...")
-        if frame.reactions_total > self.reactions_threshold:
-            self.logger.info(f"Uploading frame {frame.local_file} to best of album...")
-            message = f"Reactions after {elapsed_time.total_seconds() // 3600} hours : " \
-                      f"{frame.reactions_total}.\n" + \
-                      f"Original post: {frame.url}\n\n" + \
-                      frame.text
-            if os.path.exists(frame.local_file):
+        if os.path.exists(frame.local_file):
+            if frame.reactions_total > self.reactions_threshold:
+                self.logger.info(f"Uploading frame {frame.local_file} to best of album...")
+                message = f"Reactions after {elapsed_time.total_seconds() // 3600} hours : " \
+                          f"{frame.reactions_total}.\n" + \
+                          f"Original post: {frame.url}\n\n" + \
+                          frame.text
                 self.facebook_helper.upload_photo(frame.local_file, message, self.album_id)
                 shutil.copyfile(frame.local_file,
                                 os.path.join(self.album_path,
                                              f"Frame {frame.number} "
                                              f"id {frame.story_id} "
                                              f"reactions {frame.reactions_total}"))
-            else:
-                self.logger.info(f"File {frame.local_file} is missing. Skipping uploading to best "
-                                 f"of album...")
-
-        os.remove(frame.local_file)
+            os.remove(frame.local_file)
+        else:
+            self.logger.warning(f"File {frame.local_file} is missing. Skipping best of check...")
         return True
 
     def _queue_frame_for_check(self, frame: FacebookFrame) -> None:
@@ -185,8 +178,9 @@ class BestOfReposter(FrameBotPlugin):
         :param frame: the frame to be queued
         """
         self.logger.info(f"Queueing frame {frame.number} for best of checking...")
-        # copy frame to temp dir
+        # make shallow copy so no parameters from original are overwritten
         frame = copy.copy(frame)
+        # copy frame to temp dir
         new_file_path = self.frames_dir.joinpath(frame.local_file.name)
         shutil.copyfile(frame.local_file, new_file_path)
         frame.local_file = new_file_path
@@ -199,9 +193,9 @@ class BestOfReposter(FrameBotPlugin):
         finished posting.
         """
         self.time_threshold /= 2
-        while self.yet_to_check:
+        while len(self.yet_to_check) > 0:
             self._advance_bests()
-            if self.yet_to_check:
+            if len(self.yet_to_check) > 0:
                 self.logger.info(
                     f"There are still {len(self.yet_to_check)} frames to check for best of reuploading. "
                     f"Sleeping for one hour...")
