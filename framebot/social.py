@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Union
 
 import facebook
+from PIL.Image import Image
 
 import utils
 
@@ -30,14 +31,13 @@ class FacebookHelper(utils.LoggingObject):
 
         self.logger.info(f"Initialized GraphAPI for Facebook. Page id is {self.page_id}.")
 
-    def upload_photo(self, image: Union[Path, str, BytesIO], message: str, album: str = None,
+    def upload_photo(self, image: Union[Path, str, Image], message: str, album: str = None,
                      max_retries: int = 5, retry_time: timedelta = timedelta(minutes=3)) -> str:
         """
         Uploads a photo to a specific album, or to the news feed if no album id is specified.
         :param retry_time: time to wait if a failure occurs, before the next retry
         :param max_retries: max number of retries before giving up
-        :param image: The image to be posted. Could be a path to an image file or a BytesIO object containing the image
-        data
+        :param image: The image to be posted. Could be a path to an image file or a PIL Image
         :param message: The message used as image description
         :param album: The album where to post the image
         :return the resulting post id
@@ -53,9 +53,11 @@ class FacebookHelper(utils.LoggingObject):
                         page_post_id = self.graph.put_photo(image=im, message=message, album_path=album + "/photos")[
                             'id']
                 else:
-                    page_post_id = \
-                        self.graph.put_photo(image=image.getvalue(), message=message, album_path=album + "/photos")[
-                            'id']
+                    with BytesIO() as im_stream:
+                        image.save(im_stream, "jpeg")
+                        page_post_id = \
+                            self.graph.put_photo(image=im_stream.getvalue(), message=message,
+                                                 album_path=album + "/photos")['id']
                 uploaded = True
             except facebook.GraphAPIError as e:
                 self.logger.warning("Exception occurred during photo upload.", exc_info=True)

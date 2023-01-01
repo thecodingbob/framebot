@@ -7,6 +7,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch, DEFAULT
 
 import facebook
+from PIL import Image
 
 from social import FacebookHelper
 
@@ -33,7 +34,7 @@ class TestFacebookHelper(TestCase):
     def test_upload_photo(self):
         self._test_upload_photo(DUMMY_IMAGE)
         self._test_upload_photo(str(DUMMY_IMAGE))
-        self._test_upload_photo(BytesIO())
+        self._test_upload_photo(Image.open(DUMMY_IMAGE))
         self._test_upload_photo(DUMMY_IMAGE, "some_album")
 
     def test_upload_photo_errors(self):
@@ -59,7 +60,7 @@ class TestFacebookHelper(TestCase):
         self._test_upload_photo(DUMMY_IMAGE, max_retries=max_retries, retry_time=retry_time,
                                 expected_calls=2)
 
-    def _test_upload_photo(self, src_image: Union[Path, str, BytesIO], album_id=None, max_retries=0,
+    def _test_upload_photo(self, src_image: Union[Path, str, Image.Image], album_id=None, max_retries=0,
                            retry_time=timedelta(), expected_calls=1):
         mock_method: MagicMock = self.mock_graph.put_photo
         mock_method.return_value = {'id': POST_ID}
@@ -71,12 +72,14 @@ class TestFacebookHelper(TestCase):
         self.assertEqual(expected_calls, mock_method.call_count)
         call_args = mock_method.call_args.kwargs
         image = call_args['image']
-        if type(src_image) is not BytesIO:
+        if not issubclass(type(src_image), Image.Image):
             self.assertTrue(image.closed)
             self.assertEqual('rb', image.mode)
             self.assertEqual(str(src_image), image.name)
         else:
-            self.assertEqual(src_image.getvalue(), image)
+            with BytesIO() as im_bytes:
+                src_image.save(im_bytes, "jpeg")
+                self.assertEqual(im_bytes.getvalue(), image)
 
         self.assertEqual(test_message, call_args['message'])
         self.assertEqual((PAGE_ID if album_id is None else album_id) + "/photos", call_args['album_path'])

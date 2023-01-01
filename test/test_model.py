@@ -83,7 +83,7 @@ class TestFacebookFrame(unittest.TestCase):
         self.assertTrue((datetime.datetime.now() - self.testee.post_time) < datetime.timedelta(seconds=1))
         self.assertEqual(mock_reactions_total.return_value, self.testee.reactions_total)
 
-        self.assertRaises(ValueError, self.testee.mark_as_posted, None)
+        self.assertRaises(ValueError, self.testee.mark_as_posted, None, None)
 
 
 if __name__ == '__main__':
