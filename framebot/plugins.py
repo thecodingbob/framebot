@@ -8,7 +8,6 @@ import shutil
 import time
 import slugify
 from datetime import timedelta, datetime
-from io import BytesIO
 from random import random
 from typing import List, Type, Dict
 
@@ -243,29 +242,36 @@ class MirroredFramePoster(FrameBotPlugin):
         self.logger.info(f"Random mirroring is enabled with ratio {self.ratio}. Mirrored frames will be "
                          f"posted to the album with id {self.album_id}.")
 
-    def _post_mirror_frame(self, frame: FacebookFrame) -> str:
+    def _mirror_frame(self, frame: FacebookFrame) -> Image:
         """
-        Mirrors a frame and posts it.
+        Mirrors a frame and returns it.
         :param frame: Frame to be mirrored
-        :return the posted photo id
+        :return the mirrored frame
         """
         im = Image.open(frame.local_file)
         flipped_half = ImageOps.mirror(im.crop((0, 0, im.size[0] // 2, im.size[1])))
         im.paste(flipped_half, (im.size[0] // 2, 0))
-        image_file = BytesIO()
-        im.save(image_file, "jpeg")
+        return im
+
+    def _generate_message(self, frame: FacebookFrame) -> str:
+        """
+        Generates a message from the mirrored frame, depending on the bot settings
+        :param frame: the frame to be mirrored
+        :return: the generated message
+        """
         lines = frame.text.split("\n")
         message = ""
         if self.mirror_original_message:
-            for line in lines:
-                message += line[:len(line) // 2] + line[len(line) // 2::-1] + "\n"
+            message += "\n".join([line[:len(line) // 2] + line[len(line) // 2::-1] for line in lines])
         if self.extra_message != "":
             if self.mirror_original_message:
-                message += "\n"
+                message += "\n\n"
             message += self.extra_message
-        return self.facebook_helper.upload_photo(image_file, message, self.album_id)
+        return message
 
     def after_frame_upload(self, frame: FacebookFrame) -> None:
-        if random() > (1 - self.ratio / 100):
+        if random() >= (1 - self.ratio / 100):
             self.logger.info("Posting mirrored frame...")
-            self._post_mirror_frame(frame)
+            mirrored_frame = self._mirror_frame(frame)
+            frame_text = self._generate_message(frame)
+            self.facebook_helper.upload_photo(mirrored_frame, frame_text, self.album_id)

@@ -1,4 +1,6 @@
 import datetime
+import inspect
+import random
 import shutil
 import unittest
 import os
@@ -7,14 +9,21 @@ from datetime import timedelta, datetime
 from pathlib import Path
 from unittest.mock import Mock, patch, DEFAULT
 
+from PIL import Image, ImageOps
 from facebook import GraphAPIError
 
 import utils
 from model import FacebookFrame, FacebookReactionsTotal, FacebookStoryId
-from plugins import FrameBotPlugin, BestOfReposter
+from plugins import FrameBotPlugin, BestOfReposter, MirroredFramePoster
 from social import FacebookHelper
 from test import RESOURCES_DIR
 from utils_for_tests import FileWritingTestCase
+
+
+def generate_test_frame() -> FacebookFrame:
+    test_frame = FacebookFrame(number=1, local_file=RESOURCES_DIR.joinpath("dummy.jpg"))
+    test_frame.text = "This is a test frame. \nIt has no purpose outside of the tests."
+    return test_frame
 
 
 class TestFrameBotPlugin(FileWritingTestCase):
@@ -43,10 +52,9 @@ class TestBestOfReposter(FileWritingTestCase):
         self.test_frames = utils.load_obj_from_json_file(self.test_bofc_path)
         self.testee = BestOfReposter(facebook_helper=self.facebook_helper, album_id="album_id",
                                      video_title=self.video_title)
-        self.test_frame = FacebookFrame(number=1, local_file="dummy.jpg")
+        self.test_frame = generate_test_frame()
         self.test_frame._post_time = datetime.now()
         self.test_frame._url = "https://example.com"
-        self.test_frame.text = "Test Frame"
 
     def test_defaults(self):
         default_reactions_threshold = 50
@@ -186,6 +194,7 @@ class TestBestOfReposter(FileWritingTestCase):
             # second call
             else:
                 self.testee.yet_to_check.pop(0)
+
         og_threshold = self.testee.time_threshold
         self.testee.yet_to_check = self.test_frames
         mock_advance_bests = Mock(side_effect=mock_advance_bests_behavior)
@@ -197,6 +206,71 @@ class TestBestOfReposter(FileWritingTestCase):
         self.assertEqual(0, len(self.testee.yet_to_check))
         self.assertEqual(2, mock_advance_bests.call_count)
         self.assertEqual(1, mock_sleep.call_count)
+
+
+class TestMirroredFramePoster(unittest.TestCase):
+
+    def setUp(self) -> None:
+        self.album_id = "id"
+        self.mock_helper = Mock(spec=FacebookHelper)
+        self.testee = MirroredFramePoster(album_id=self.album_id, facebook_helper=self.mock_helper)
+        self.test_frame = generate_test_frame()
+
+    def test_default_extra_message(self):
+        default_bot_name = inspect.signature(self.testee.__class__.__init__).parameters['bot_name'].default
+        self.assertEqual(f"Just a randomly mirrored image.\n-{default_bot_name}", self.testee.extra_message)
+
+    def test_mirror_frame(self):
+        test_frame_image = Image.open(self.test_frame.local_file)
+        mirrored_frame_image = self.testee._mirror_frame(self.test_frame)
+        self.assertEqual(test_frame_image.size, mirrored_frame_image.size)
+        size = test_frame_image.size
+        self.assertEqual(
+            test_frame_image.crop((0, 0, size[0] // 2, size[1])),
+            mirrored_frame_image.crop((0, 0, size[0] // 2, size[1]))
+        )
+        self.assertEqual(
+            test_frame_image.crop((0, 0, size[0] // 2, size[1])),
+            ImageOps.mirror(mirrored_frame_image.crop((size[0] // 2, 0, size[0], size[1])))
+        )
+
+    def test_generate_message(self):
+        # default extra + mirror original
+        self.testee.mirror_original_message = True
+        lines = self.test_frame.text.split("\n")
+        mirrored_original = "\n".join([line[:len(line) // 2] + line[len(line) // 2::-1] for line in lines])
+        expected_message = f"{mirrored_original}\n\n{self.testee.extra_message}"
+        self.assertEqual(expected_message, self.testee._generate_message(self.test_frame))
+
+        # no original
+        self.testee.mirror_original_message = False
+        self.assertEqual(self.testee.extra_message, self.testee._generate_message(self.test_frame))
+
+        # no message at all
+        self.testee.extra_message = ""
+        self.assertEqual("", self.testee._generate_message(self.test_frame))
+
+        # only original
+        self.testee.mirror_original_message = True
+        self.assertEqual(mirrored_original, self.testee._generate_message(self.test_frame))
+
+    def test_after_frame_upload(self):
+        mock_mirror_frame = Mock(spec=self.testee._mirror_frame)
+        mock_generate_message = Mock(spec=self.testee._generate_message)
+        self.testee._mirror_frame = mock_mirror_frame
+        self.testee._generate_message = mock_generate_message
+
+        # don't post
+        self.testee.ratio = 0
+        self.testee.after_frame_upload(self.test_frame)
+        mock_mirror_frame.assert_not_called()
+        mock_generate_message.assert_not_called()
+
+        # post
+        self.testee.ratio = 100
+        self.testee.after_frame_upload(self.test_frame)
+        mock_mirror_frame.assert_called_once_with(self.test_frame)
+        mock_generate_message.assert_called_once_with(self.test_frame)
 
 
 if __name__ == '__main__':
