@@ -15,8 +15,8 @@ import utils
 from model import FacebookReactionsTotal, FacebookStoryId
 from plugins import FrameBotPlugin, BestOfReposter, MirroredFramePoster
 from social import FacebookHelper
-from test import RESOURCES_DIR, generate_test_frame
-from utils_for_tests import FileWritingTestCase
+from test import RESOURCES_DIR
+from utils_for_tests import FileWritingTestCase, generate_test_frame
 
 
 class TestFrameBotPlugin(FileWritingTestCase):
