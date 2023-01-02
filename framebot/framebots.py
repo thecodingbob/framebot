@@ -4,8 +4,10 @@ Contains framebots implementations
 import os
 import re
 import time
-from glob import glob
-from typing import List
+from datetime import timedelta
+from pathlib import Path
+from re import Pattern
+from typing import List, AnyStr, Union
 
 import utils
 from model import FacebookFrame
@@ -20,12 +22,14 @@ def _remove_last_frame_uploaded_file():
         os.remove(LAST_FRAME_UPLOADED_FILE)
 
 
-def get_filename(full_path: str):
+def _get_filename(full_path: Union[str, Path]):
     """
 
     :param full_path:
     :return:
     """
+    if issubclass(type(full_path), Path):
+        full_path = str(full_path)
     return full_path[full_path.rfind(os.path.sep) + 1:]
 
 
@@ -41,8 +45,9 @@ class SimpleFrameBot(Framebot):
     """
     Uploads frames from a fixed directory
     """
-    def __init__(self, facebook_helper: FacebookHelper, video_title: str, frames_directory: str = "frames",
-                 frames_ext: str = "jpg", frames_naming: str = "$N$", upload_interval: int = 150, bot_name: str = "Bot",
+    def __init__(self, facebook_helper: FacebookHelper, video_title: str, frames_directory: Union[str, Path] = "frames",
+                 frames_ext: str = "jpg", frames_naming: str = "$N$",
+                 upload_interval: timedelta = timedelta(seconds=150), bot_name: str = "Bot",
                  delete_files: bool = False, plugins: List[FrameBotPlugin] = None):
         """"
         :param facebook_helper: Helper to gather data and post it to Facebook
@@ -51,7 +56,7 @@ class SimpleFrameBot(Framebot):
         :param frames_directory: Directory where the frame files are stored
         :param frames_ext: Extension of the frame files
         :param frames_naming: Naming pattern of the frame files e.g frame$N$
-        :param upload_interval: time interval between one frame and the other, in seconds
+        :param upload_interval: time interval between one frame and the other
         :param bot_name: bot's name, currently used only in the mirrored posts
         :param delete_files: if this flag is enabled, the frame files will be deleted after those served their purpose
         :param plugins: plugins to extend the bot's functionalities
@@ -63,29 +68,40 @@ class SimpleFrameBot(Framebot):
         self.video_title = video_title
         self.upload_interval = upload_interval
         self.delete_files = delete_files
-        self.frames_directory = frames_directory
+        self.frames_directory = frames_directory if type(frames_directory) is Path else Path(frames_directory)
         self.frames_ext = frames_ext
-        expr = "^" + frames_directory + "\\" + os.path.sep + frames_naming.replace("$N$", "(\\d+)")
-        expr += "\\." + self.frames_ext + "$"
-        self.frames_naming = re.compile(expr)
-        self.last_frame_uploaded: int = -1
+        self.frames_naming = frames_naming
         if plugins is None:
             plugins = []
         self.plugins: List[FrameBotPlugin] = plugins
-        self._init_frames()
         self._init_status()
+        self._init_frames()
 
         self._log_parameters()
         self.logger.info("Done initializing.")
+
+    @property
+    def frames_naming(self) -> Pattern[AnyStr]:
+        return self._frames_naming
+
+    @frames_naming.setter
+    def frames_naming(self, naming_str: str) -> None:
+        if "$N$" not in naming_str:
+            raise ValueError("Frames naming must contain the $N$ placeholder to determine where the frame number"
+                             " should be extracted from.")
+        naming_str = naming_str.replace("$N$", "(\\d+)")
+        expr = f"^{naming_str}\\.{self.frames_ext}$"
+        self._frames_naming = re.compile(expr)
 
     def _init_frames(self) -> None:
         """
         Initializes the frames list and total frames number
         """
-        self.frames: List[FacebookFrame] = [
-            FacebookFrame(self._get_frame_index_number(frame_path), frame_path, facebook_helper=self.facebook_helper)
-            for frame_path in glob(os.path.join(self.frames_directory, f"*.{self.frames_ext}"))
-        ]
+        self.frames: List[FacebookFrame] = []
+        for frame_path in self.frames_directory.glob(f"*.{self.frames_ext}"):
+            loaded_frame = FacebookFrame(self._get_frame_index_number(frame_path), frame_path)
+            if loaded_frame.number > self.last_frame_uploaded:
+                self.frames.append(loaded_frame)
         self.frames.sort(key=lambda frame: frame.number)
         if len(self.frames) == 0:
             self.total_frames_number = 0
@@ -102,6 +118,7 @@ class SimpleFrameBot(Framebot):
                 self.last_frame_uploaded = int(f.read())
                 self.logger.info(f"Last frame uploaded is {self.last_frame_uploaded}.")
         else:
+            self.last_frame_uploaded = -1
             self.logger.info(f"Starting the bot from the first frame.")
 
     def _log_parameters(self) -> None:
@@ -117,13 +134,13 @@ class SimpleFrameBot(Framebot):
         plugin_names = [type(plugin).__name__ for plugin in self.plugins]
         self.logger.info(f"The following plugins are loaded: {plugin_names}")
 
-    def _get_frame_index_number(self, file_name: str) -> int:
+    def _get_frame_index_number(self, file_path: Union[Path, str]) -> int:
         """
         Using the frame naming regexp, extracts the frame number from the filename.
-        :param file_name: The filename of the frame file.
+        :param file_path: The path of the frame file.
         :return: The frame number
         """
-        return int(self.frames_naming.search(file_name).group(1))
+        return int(self.frames_naming.search(_get_filename(file_path)).group(1))
 
     def _get_default_message(self, frame_number: int) -> str:
         """
@@ -158,8 +175,6 @@ class SimpleFrameBot(Framebot):
         The frame upload loop
         """
         for frame in self.frames:
-            if frame.number <= self.last_frame_uploaded:
-                continue
             for plugin in self.plugins:
                 plugin.before_frame_upload(frame)
             self._upload_frame(frame)
@@ -168,7 +183,7 @@ class SimpleFrameBot(Framebot):
                 plugin.after_frame_upload(frame)
             if self.delete_files:
                 os.remove(frame.local_file)
-            time.sleep(self.upload_interval)
+            time.sleep(self.upload_interval.total_seconds())
 
     def _upload_frame(self, frame: FacebookFrame) -> None:
         """
@@ -177,7 +192,7 @@ class SimpleFrameBot(Framebot):
         """
         self.logger.info(f"Uploading frame {frame.number} of {self.total_frames_number}...")
 
-        frame.message = self._get_default_message(frame.number)
-        frame.mark_as_posted(self.facebook_helper.upload_photo(frame.local_file, frame.message))
+        frame.text = self._get_default_message(frame.number)
+        frame.mark_as_posted(self.facebook_helper.upload_photo(frame.local_file, frame.text), self.facebook_helper)
 
         self._update_last_frame_uploaded(frame.number)
