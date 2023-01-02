@@ -12,17 +12,11 @@ from PIL import Image, ImageOps
 from facebook import GraphAPIError
 
 import utils
-from model import FacebookFrame, FacebookReactionsTotal, FacebookStoryId
+from model import FacebookReactionsTotal, FacebookStoryId
 from plugins import FrameBotPlugin, BestOfReposter, MirroredFramePoster
 from social import FacebookHelper
-from test import RESOURCES_DIR
+from test import RESOURCES_DIR, generate_test_frame
 from utils_for_tests import FileWritingTestCase
-
-
-def generate_test_frame() -> FacebookFrame:
-    test_frame = FacebookFrame(number=1, local_file=RESOURCES_DIR.joinpath("dummy.jpg"))
-    test_frame.text = "This is a test frame. \nIt has no purpose outside of the tests."
-    return test_frame
 
 
 class TestFrameBotPlugin(FileWritingTestCase):
