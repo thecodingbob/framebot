@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import unittest
+from pathlib import Path
 
 from model import FacebookFrame
 
@@ -11,11 +12,11 @@ from test import RESOURCES_DIR
 class FileWritingTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.test_dir = tempfile.mkdtemp()
+        self.test_dir = Path(tempfile.mkdtemp())
         os.chdir(self.test_dir)
 
     def tearDown(self) -> None:
-        if os.getcwd() == self.test_dir:
+        if Path(os.getcwd()) == self.test_dir:
             os.chdir("/")
         shutil.rmtree(self.test_dir)
 

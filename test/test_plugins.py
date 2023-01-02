@@ -204,6 +204,7 @@ class TestBestOfReposter(FileWritingTestCase):
 class TestMirroredFramePoster(FileWritingTestCase):
 
     def setUp(self) -> None:
+        super(TestMirroredFramePoster, self).setUp()
         self.album_id = "id"
         self.mock_helper = Mock(spec=FacebookHelper)
         self.testee = MirroredFramePoster(album_id=self.album_id, facebook_helper=self.mock_helper)
