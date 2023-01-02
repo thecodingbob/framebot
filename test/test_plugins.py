@@ -201,7 +201,7 @@ class TestBestOfReposter(FileWritingTestCase):
         self.assertEqual(1, mock_sleep.call_count)
 
 
-class TestMirroredFramePoster(unittest.TestCase):
+class TestMirroredFramePoster(FileWritingTestCase):
 
     def setUp(self) -> None:
         self.album_id = "id"
