@@ -18,6 +18,7 @@ from pyfacebook import FacebookError
 from pathlib import Path
 import os
 
+from . import DEFAULT_WORKING_DIR
 from . import utils
 from .model import FacebookFrame
 from .social import FacebookHelper
@@ -42,7 +43,7 @@ class FrameBotPlugin(utils.LoggingObject):
         if depends_on is None:
             depends_on = []
         if working_dir is None:
-            working_dir = Path("plugins").joinpath(class_name)
+            working_dir = DEFAULT_WORKING_DIR.joinpath("plugins").joinpath(class_name)
         self.depends_on: List[Type[FrameBotPlugin]] = depends_on
         self.working_dir: Path = working_dir
         self.dependencies: Dict[FrameBotPlugin] = {}
@@ -86,7 +87,7 @@ class BestOfReposter(FrameBotPlugin):
                  video_title: str, reactions_threshold: int = 50,
                  time_threshold: timedelta = timedelta(days=1),
                  yet_to_check_file: str = "bofc.json",
-                 store_best_ofs: bool = True):
+                 store_best_ofs: bool = True, working_dir: Path = None):
         """
         Constructor
         :param facebook_helper: Helper to gather data and post it to Facebook
@@ -98,25 +99,25 @@ class BestOfReposter(FrameBotPlugin):
         :param yet_to_check_file: file where the queued frames data will be stored for later restarts
         :param store_best_ofs: determines if the best of frames should also be stored locally for later use
         """
-        super().__init__()
+        super().__init__(working_dir=working_dir)
         self.facebook_helper: FacebookHelper = facebook_helper
         self.album_id: str = album_id
         self.video_title: str = video_title
         self.reactions_threshold: int = reactions_threshold
         self.time_threshold: timedelta = time_threshold
         normalized_video_title = slugify.slugify(f"Best of {self.video_title}")
-        self.local_directory = self.working_dir.joinpath(normalized_video_title)
-        self.yet_to_check_file: Path = self.local_directory.joinpath(yet_to_check_file)
+        self.working_dir = self.working_dir.joinpath(normalized_video_title)
+        self.yet_to_check_file: Path = self.working_dir.joinpath(yet_to_check_file)
         self.yet_to_check: List[FacebookFrame] = []
-        self.album_path: Path = self.local_directory.joinpath("album")
-        self.frames_dir: Path = self.local_directory.joinpath("frames_to_check")
+        self.album_path: Path = self.working_dir.joinpath("album")
+        self.frames_dir: Path = self.working_dir.joinpath("frames_to_check")
         self.store_best_ofs: bool = store_best_ofs
 
         self.logger.info(f"Best of reposting is enabled with threshold {self.reactions_threshold} and "
                          f"{self.time_threshold} time threshold.")
         self.logger.info(f"Best ofs will be saved locally in the directory '{self.album_path}' and "
                          f"reuploaded in the album with id {self.album_id}.")
-        os.makedirs(self.local_directory, exist_ok=True)
+        os.makedirs(self.working_dir, exist_ok=True)
         os.makedirs(self.album_path, exist_ok=True)
         os.makedirs(self.frames_dir, exist_ok=True)
 
@@ -222,7 +223,7 @@ class MirroredFramePoster(FrameBotPlugin):
 
     def __init__(self, facebook_helper: FacebookHelper, album_id: str, ratio: float = 0.5,
                  bot_name: str = "MirrorBot", mirror_original_message: bool = True,
-                 extra_message: str = None):
+                 extra_message: str = None, working_dir: Path = None):
         """
         Constructor
         :param facebook_helper: Helper to gather data and post it to Facebook
@@ -232,7 +233,7 @@ class MirroredFramePoster(FrameBotPlugin):
         :param mirror_original_message: Also mirrors the original text message along with the image
         :param extra_message: Message to attach to the frame. Default adds the bot's name as a sort of signature
         """
-        super().__init__()
+        super().__init__(working_dir=working_dir)
         self.facebook_helper: FacebookHelper = facebook_helper
         self.album_id: str = album_id
         self.ratio: float = ratio

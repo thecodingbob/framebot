@@ -22,17 +22,8 @@ from test.utils_for_tests import FileWritingTestCase, generate_test_frame
 class TestFrameBotPlugin(FileWritingTestCase):
 
     def test_init(self):
-        os.chdir(self.test_dir)
-        plugins_directory = Path(self.test_dir).joinpath("plugins")
-        plugin_directory = plugins_directory.joinpath(FrameBotPlugin.__name__)
-        self.assertFalse(plugin_directory.exists())
-        FrameBotPlugin()
-        self.assertTrue(plugin_directory.exists())
-
-        plugin_directory = plugins_directory.joinpath("my_custom_name")
-        self.assertFalse(plugin_directory.exists())
-        FrameBotPlugin(working_dir=plugin_directory)
-        self.assertTrue(plugin_directory.exists())
+        testee = FrameBotPlugin(working_dir=self.test_dir)
+        self.assertTrue(testee.working_dir.exists())
 
 
 class TestBestOfReposter(FileWritingTestCase):
@@ -44,7 +35,7 @@ class TestBestOfReposter(FileWritingTestCase):
         self.test_bofc_path = RESOURCES_DIR.joinpath("plugins").joinpath("best_of_reposter").joinpath("bofc.json")
         self.test_frames = utils.load_obj_from_json_file(self.test_bofc_path)
         self.testee = BestOfReposter(facebook_helper=self.facebook_helper, album_id="album_id",
-                                     video_title=self.video_title)
+                                     video_title=self.video_title, working_dir=self.test_dir)
         self.test_frame = generate_test_frame()
         self.test_frame._post_time = datetime.now()
         self.test_frame._url = "https://example.com"
@@ -55,17 +46,13 @@ class TestBestOfReposter(FileWritingTestCase):
         default_yet_to_check_file = "bofc.json"
         default_store_best_ofs = True
 
-        plugin_dir = Path(self.test_dir).joinpath("plugins").joinpath(self.testee.__class__.__name__) \
-            .joinpath(slugify.slugify(f"Best Of {self.video_title}"))
-        album_dir = plugin_dir.joinpath("album")
-        frames_dir = plugin_dir.joinpath("frames_to_check")
-
-        self.assertTrue(album_dir.exists())
-        self.assertTrue(frames_dir.exists())
+        self.assertTrue(self.testee.album_path.exists())
+        self.assertTrue(self.testee.frames_dir.exists())
 
         self.assertEqual(default_reactions_threshold, self.testee.reactions_threshold)
         self.assertEqual(default_time_threshold, self.testee.time_threshold)
-        self.assertEqual(plugin_dir.joinpath(default_yet_to_check_file), self.testee.yet_to_check_file.absolute())
+        self.assertEqual(self.testee.working_dir.joinpath(default_yet_to_check_file),
+                         self.testee.yet_to_check_file.absolute())
         self.assertEqual(default_store_best_ofs, self.testee.store_best_ofs)
 
     def test_check_for_existing_status(self):
@@ -213,7 +200,8 @@ class TestMirroredFramePoster(FileWritingTestCase):
         super(TestMirroredFramePoster, self).setUp()
         self.album_id = "id"
         self.mock_helper = Mock(spec=FacebookHelper)
-        self.testee = MirroredFramePoster(album_id=self.album_id, facebook_helper=self.mock_helper)
+        self.testee = MirroredFramePoster(album_id=self.album_id, facebook_helper=self.mock_helper,
+                                          working_dir=self.test_dir)
         self.test_frame = generate_test_frame()
 
     def test_default_extra_message(self):

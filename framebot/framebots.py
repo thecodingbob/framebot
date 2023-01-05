@@ -9,13 +9,12 @@ from pathlib import Path
 from re import Pattern
 from typing import List, AnyStr, Union
 
-from . import utils
+from . import utils, DEFAULT_WORKING_DIR
 from .model import FacebookFrame
 from .plugins import FrameBotPlugin
 from .social import FacebookHelper
 
 LAST_FRAME_UPLOADED_FILE = "last_frame_uploaded"
-
 
 
 def _get_filename(full_path: Union[str, Path]):
@@ -41,11 +40,12 @@ class SimpleFrameBot(Framebot):
     """
     Uploads frames from a fixed directory
     """
+
     def __init__(self, facebook_helper: FacebookHelper, video_title: str, frames_directory: Union[str, Path] = "frames",
                  frames_ext: str = "jpg", frames_naming: str = "$N$",
                  upload_interval: timedelta = timedelta(seconds=150), bot_name: str = "Bot",
                  delete_files: bool = False, plugins: List[FrameBotPlugin] = None,
-                 working_dir: Union[Path, str] = None):
+                 working_dir: Union[Path, str] = DEFAULT_WORKING_DIR):
         """"
         :param facebook_helper: Helper to gather data and post it to Facebook
         :param video_title: Title of the movie/episode/whatever you want to post. Will be showed in the posts
@@ -68,8 +68,6 @@ class SimpleFrameBot(Framebot):
         self.frames_directory = frames_directory if type(frames_directory) is Path else Path(frames_directory)
         self.frames_ext = frames_ext
         self.frames_naming = frames_naming
-        if working_dir is None:
-            working_dir = Path.home().joinpath("framebots").joinpath(self.video_title)
         self.working_dir = working_dir
         self.working_dir.mkdir(parents=True, exist_ok=True)
         self.last_frame_uploaded_file = self.working_dir.joinpath(LAST_FRAME_UPLOADED_FILE)
