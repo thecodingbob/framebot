@@ -69,7 +69,7 @@ class SimpleFrameBot(Framebot):
         self.frames_ext = frames_ext
         self.frames_naming = frames_naming
         if working_dir is None:
-            working_dir = Path.home().joinpath("framebots")
+            working_dir = Path.home().joinpath("framebots").joinpath(self.video_title)
         self.working_dir = working_dir
         self.working_dir.mkdir(parents=True, exist_ok=True)
         self.last_frame_uploaded_file = self.working_dir.joinpath(LAST_FRAME_UPLOADED_FILE)
