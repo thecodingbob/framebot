@@ -43,9 +43,9 @@ class FrameBotPlugin(utils.LoggingObject):
         if depends_on is None:
             depends_on = []
         if working_dir is None:
-            working_dir = DEFAULT_WORKING_DIR.joinpath("plugins").joinpath(class_name)
+            working_dir = DEFAULT_WORKING_DIR
         self.depends_on: List[Type[FrameBotPlugin]] = depends_on
-        self.working_dir: Path = working_dir
+        self.working_dir: Path = working_dir.joinpath("plugins").joinpath(class_name)
         self.dependencies: Dict[FrameBotPlugin] = {}
 
         os.makedirs(self.working_dir, exist_ok=True)

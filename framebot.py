@@ -68,24 +68,27 @@ print(
     f"{enabled_string}."
     f"\nThe bot will try to post a frame every {upload_interval} seconds and will "
     f"{'' if delete_files else 'not '}delete those after it's done.\n")
+
+working_dir = Path(dirname(config_path))
 facebook_helper = FacebookHelper(access_token=access_token, page_id=page_id)
 
 plugins = []
 if best_of_reposting_enabled:
     plugins.append(BestOfReposter(
         album_id=best_of_album_id, facebook_helper=facebook_helper, video_title=movie_title,
-        reactions_threshold=reactions_threshold, time_threshold=timedelta(hours=wait_hours))
+        reactions_threshold=reactions_threshold, time_threshold=timedelta(hours=wait_hours),
+        working_dir=working_dir)
     )
 if mirroring_enabled:
     plugins.append(
         MirroredFramePoster(album_id=mirror_album_id, facebook_helper=facebook_helper,
-                            bot_name=bot_name, ratio=mirroring_ratio)
+                            bot_name=bot_name, ratio=mirroring_ratio, working_dir=working_dir)
     )
 
 bot = SimpleFrameBot(facebook_helper=facebook_helper, video_title=movie_title,
                      upload_interval=upload_interval, delete_files=delete_files, bot_name=bot_name,
                      frames_ext=frames_ext,
                      frames_directory=frames_directory, frames_naming=frames_naming, plugins=plugins,
-                     working_dir=Path(dirname(config_path)))
+                     working_dir=working_dir)
 
 bot.start()
