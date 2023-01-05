@@ -49,7 +49,7 @@ class FacebookHelper(LoggingObject):
         super().__init__()
         self.access_token: str = access_token
         self.page_id: str = page_id
-        self.graph: GraphAPI = GraphAPI(access_token)
+        self.graph: GraphAPI = GraphAPI(access_token=access_token)
 
         self.logger.info(f"Initialized GraphAPI for Facebook. Page id is {self.page_id}.")
 
