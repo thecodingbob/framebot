@@ -7,8 +7,8 @@ from os.path import dirname
 from pathlib import Path
 
 from framebot.framebots import SimpleFrameBot
-from plugins import BestOfReposter, MirroredFramePoster
-from social import FacebookHelper
+from framebot.plugins import BestOfReposter, MirroredFramePoster
+from framebot.social import FacebookHelper
 
 config_path = Path("config.ini")
 
