@@ -81,7 +81,7 @@ class SimpleFrameBot(Framebot):
         self.logger.info("Done initializing.")
 
     @property
-    def frames_naming(self) -> Pattern[AnyStr]:
+    def frames_naming(self) -> Pattern:
         return self._frames_naming
 
     @frames_naming.setter
