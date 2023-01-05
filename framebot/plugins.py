@@ -14,12 +14,13 @@ from typing import List, Type, Dict
 from PIL import Image, ImageOps
 from pyfacebook import FacebookError
 
-import utils
+
 from pathlib import Path
 import os
 
-from model import FacebookFrame
-from social import FacebookHelper
+from . import utils
+from .model import FacebookFrame
+from .social import FacebookHelper
 
 
 class FrameBotPlugin(utils.LoggingObject):
@@ -127,6 +128,7 @@ class BestOfReposter(FrameBotPlugin):
             self.logger.info(f"Found existing {self.yet_to_check_file} file for best of checks, "
                              f"trying to load it...")
             self.yet_to_check = utils.load_obj_from_json_file(self.yet_to_check_file)
+            print(self.yet_to_check)
             self.yet_to_check.sort(key=lambda frame: frame.post_time)
 
     def _advance_bests(self) -> None:

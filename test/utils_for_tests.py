@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from model import FacebookFrame
+from framebot.model import FacebookFrame
 
 from test import RESOURCES_DIR
 

@@ -9,10 +9,10 @@ from pathlib import Path
 from re import Pattern
 from typing import List, AnyStr, Union
 
-import utils
-from model import FacebookFrame
-from plugins import FrameBotPlugin
-from social import FacebookHelper
+from . import utils
+from .model import FacebookFrame
+from .plugins import FrameBotPlugin
+from .social import FacebookHelper
 
 LAST_FRAME_UPLOADED_FILE = "last_frame_uploaded"
 

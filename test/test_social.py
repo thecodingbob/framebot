@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch, DEFAULT
 from PIL import Image
 from pyfacebook import FacebookError
 
-from social import FacebookHelper
+from framebot.social import FacebookHelper
 from test import RESOURCES_DIR
 
 PHOTO_ID = "1"
@@ -24,7 +24,7 @@ DUMMY_IMAGE = RESOURCES_DIR.joinpath("dummy.jpg")
 
 class TestFacebookHelper(TestCase):
 
-    @patch("social.GraphAPI")
+    @patch("framebot.social.GraphAPI")
     def setUp(self, mock_graph_api_class: MagicMock) -> None:
         self.testee = FacebookHelper(access_token=ACCESS_TOKEN, page_id=PAGE_ID)
         self.mock_graph: MagicMock = self.testee.graph

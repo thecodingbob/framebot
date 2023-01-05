@@ -1,6 +1,6 @@
 [
     {
-        "py/object": "model.FacebookFrame",
+        "py/object": "framebot.model.FacebookFrame",
         "number": 2,
         "local_file": {
             "py/reduce": [
@@ -34,14 +34,14 @@
             ]
         },
         "_reactions_total": {
-            "py/object": "model.FacebookReactionsTotal",
+            "py/object": "framebot.model.FacebookReactionsTotal",
             "post_id": "post_id1",
             "_value": null,
             "_last_updated": null
         }
     },
     {
-        "py/object": "model.FacebookFrame",
+        "py/object": "framebot.model.FacebookFrame",
         "number": 3,
         "local_file": {
             "py/reduce": [
@@ -75,14 +75,14 @@
             ]
         },
         "_reactions_total": {
-            "py/object": "model.FacebookReactionsTotal",
+            "py/object": "framebot.model.FacebookReactionsTotal",
             "post_id": "post_id2",
             "_value": null,
             "_last_updated": null
         }
     },
     {
-        "py/object": "model.FacebookFrame",
+        "py/object": "framebot.model.FacebookFrame",
         "number": 4,
         "local_file": {
             "py/reduce": [
@@ -116,7 +116,7 @@
             ]
         },
         "_reactions_total": {
-            "py/object": "model.FacebookReactionsTotal",
+            "py/object": "framebot.model.FacebookReactionsTotal",
             "post_id": "post_id3",
             "_value": null,
             "_last_updated": null

@@ -10,7 +10,7 @@ from typing import Union
 from pyfacebook import GraphAPI, FacebookError
 from PIL.Image import Image
 
-import utils
+from .utils import LoggingObject
 
 
 class FacebookPostPhotoResponse:
@@ -35,7 +35,7 @@ class FacebookPostPhotoResponse:
         return repr(self.__dict__)
 
 
-class FacebookHelper(utils.LoggingObject):
+class FacebookHelper(LoggingObject):
     """
     Helper to interact with the Facebook Graph API
     """

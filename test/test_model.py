@@ -2,8 +2,8 @@ import datetime
 import unittest
 from unittest.mock import Mock, patch, MagicMock, PropertyMock
 
-from model import RemoteValue, FacebookReactionsTotal, FacebookFrame
-from social import FacebookPostPhotoResponse
+from framebot.model import RemoteValue, FacebookReactionsTotal, FacebookFrame
+from framebot.social import FacebookPostPhotoResponse
 
 
 class TestRemoteValue(unittest.TestCase):
@@ -56,7 +56,7 @@ class TestFacebookFrame(unittest.TestCase):
     def test_reactions_total(self):
         self.assertIsNone(self.testee.reactions_total)
 
-    @patch("model.FacebookReactionsTotal.value", new_callable=PropertyMock)
+    @patch("framebot.model.FacebookReactionsTotal.value", new_callable=PropertyMock)
     def test_mark_as_posted(self, mock_reactions_total):
         mock_reactions_total.return_value = 12
         fake_api_response = FacebookPostPhotoResponse("id", "post_id")

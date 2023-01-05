@@ -5,11 +5,11 @@ from datetime import timedelta
 from pathlib import Path
 from unittest.mock import Mock, patch, mock_open
 
-from framebots import SimpleFrameBot, _remove_last_frame_uploaded_file, LAST_FRAME_UPLOADED_FILE, _get_filename
-from model import FacebookFrame
-from plugins import FrameBotPlugin
-from social import FacebookHelper
-from utils_for_tests import FileWritingTestCase
+from framebot.framebots import SimpleFrameBot, _remove_last_frame_uploaded_file, LAST_FRAME_UPLOADED_FILE, _get_filename
+from framebot.model import FacebookFrame
+from framebot.plugins import FrameBotPlugin
+from framebot.social import FacebookHelper
+from test.utils_for_tests import FileWritingTestCase
 
 from test import RESOURCES_DIR
 
@@ -151,7 +151,7 @@ class TestSimpleFrameBot(FileWritingTestCase):
         with open(test_last_frame_uploaded_path) as f:
             self.assertEqual(str(test_last_frame_uploaded), f.read())
 
-    @patch("framebots._remove_last_frame_uploaded_file")
+    @patch("framebot.framebots._remove_last_frame_uploaded_file")
     def test_start(self, mock_remove: Mock):
         self.testee.plugins.append(self.mock_plugin)
         self.testee._upload_loop = Mock()

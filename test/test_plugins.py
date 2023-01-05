@@ -10,13 +10,13 @@ from unittest.mock import Mock, patch, DEFAULT
 from pyfacebook import FacebookError
 
 from PIL import Image, ImageOps
+from framebot import utils
 
-import utils
-from model import FacebookReactionsTotal
-from plugins import FrameBotPlugin, BestOfReposter, MirroredFramePoster
-from social import FacebookHelper
+from framebot.model import FacebookReactionsTotal, FacebookFrame
+from framebot.plugins import FrameBotPlugin, BestOfReposter, MirroredFramePoster
+from framebot.social import FacebookHelper
 from test import RESOURCES_DIR
-from utils_for_tests import FileWritingTestCase, generate_test_frame
+from test.utils_for_tests import FileWritingTestCase, generate_test_frame
 
 
 class TestFrameBotPlugin(FileWritingTestCase):
@@ -75,6 +75,9 @@ class TestBestOfReposter(FileWritingTestCase):
         # asserting correct loading
         shutil.copy(self.test_bofc_path, self.testee.yet_to_check_file)
         self.testee._check_for_existing_status()
+        self.assertEqual(len(self.test_frames), len(self.testee.yet_to_check))
+        for frame in self.testee.yet_to_check:
+            self.assertEqual(FacebookFrame, type(frame))
         self.assertEqual(self.test_frames, self.testee.yet_to_check)
         self.assertTrue(all(self.testee.yet_to_check[i].post_time < self.testee.yet_to_check[i + 1].post_time
                             for i in range(len(self.testee.yet_to_check) - 1)))
@@ -121,7 +124,7 @@ class TestBestOfReposter(FileWritingTestCase):
             self.assertTrue(self.testee._check_and_post(self.test_frame))
             mock_exists.assert_called_once_with(self.test_frame.local_file)
 
-    @patch("utils.safe_json_dump")
+    @patch("framebot.utils.safe_json_dump")
     def test_advance_bests(self, mock_json_dump: Mock):
         self.testee.yet_to_check = self.test_frames
         mock_check_and_post = Mock()
@@ -168,7 +171,7 @@ class TestBestOfReposter(FileWritingTestCase):
         mock_check_and_post.assert_not_called()
         mock_json_dump.assert_not_called()
 
-    @patch("utils.safe_json_dump")
+    @patch("framebot.utils.safe_json_dump")
     @patch("shutil.copyfile")
     def test_queue_for_frame_check(self, mock_copyfile: Mock, mock_json_dump: Mock):
         self.testee._queue_frame_for_check(self.test_frame)

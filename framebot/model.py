@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union, Optional, TypeVar, Generic, Callable
 
-from social import FacebookHelper, FacebookPostPhotoResponse
+from .social import FacebookHelper, FacebookPostPhotoResponse
 
 T = TypeVar("T")
 

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import jsonpickle
 
-from utils import get_logger, LoggingObject, safe_json_dump
+from framebot.utils import get_logger, LoggingObject, safe_json_dump
 
 
 class TestUtils(unittest.TestCase):
