@@ -7,12 +7,12 @@ import slugify
 from datetime import timedelta, datetime
 from pathlib import Path
 from unittest.mock import Mock, patch, DEFAULT
+from pyfacebook import FacebookError
 
 from PIL import Image, ImageOps
-from facebook import GraphAPIError
 
 import utils
-from model import FacebookReactionsTotal, FacebookStoryId
+from model import FacebookReactionsTotal
 from plugins import FrameBotPlugin, BestOfReposter, MirroredFramePoster
 from social import FacebookHelper
 from test import RESOURCES_DIR
@@ -90,7 +90,7 @@ class TestBestOfReposter(FileWritingTestCase):
         # not enough reactions
         with patch(exists_method, return_value=True) as mock_exists:
             self.test_frame._reactions_total = FacebookReactionsTotal(
-                story_id=Mock(spec=FacebookStoryId), facebook_helper=Mock(spec=FacebookHelper))
+                post_id="post_id", facebook_helper=Mock(spec=FacebookHelper))
             self.test_frame._reactions_total._value = 99
             self.test_frame._post_time = datetime.now() - timedelta(days=2)
             self.testee.reactions_threshold = 100
@@ -112,7 +112,7 @@ class TestBestOfReposter(FileWritingTestCase):
             mock_copyfile.assert_called_once_with(self.test_frame.local_file,
                                                   os.path.join(self.testee.album_path,
                                                                f"Frame {self.test_frame.number} "
-                                                               f"id {self.test_frame.story_id} "
+                                                               f"id {self.test_frame.post_id} "
                                                                f"reactions {self.test_frame.reactions_total}"))
             mock_exists.assert_called_once_with(self.test_frame.local_file)
 
@@ -136,8 +136,11 @@ class TestBestOfReposter(FileWritingTestCase):
         mock_check_and_post.reset_mock()
         mock_json_dump.reset_mock()
 
-        # GraphAPIError raised
-        mock_check_and_post.side_effect = GraphAPIError("fake error")
+        # FacebookError raised
+        mock_check_and_post.side_effect = FacebookError(kwargs={"error": {
+            "message": "Not important",
+            "code": 0
+        }})
         expected_len = len(self.testee.yet_to_check)
 
         self.testee._advance_bests()

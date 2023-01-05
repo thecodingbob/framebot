@@ -12,7 +12,7 @@ from random import random
 from typing import List, Type, Dict
 
 from PIL import Image, ImageOps
-from facebook import GraphAPIError
+from pyfacebook import FacebookError
 
 import utils
 from pathlib import Path
@@ -138,7 +138,7 @@ class BestOfReposter(FrameBotPlugin):
             while len(self.yet_to_check) > 0 and (self._check_and_post(self.yet_to_check[0])):
                 self.yet_to_check.pop(0)
                 utils.safe_json_dump(self.yet_to_check_file, self.yet_to_check)
-        except GraphAPIError:
+        except FacebookError:
             self.logger.warning("There was a problem during the check of best-ofs", exc_info=True)
         self.logger.info("Done checking for best-ofs.")
 
@@ -164,7 +164,7 @@ class BestOfReposter(FrameBotPlugin):
                 shutil.copyfile(frame.local_file,
                                 os.path.join(self.album_path,
                                              f"Frame {frame.number} "
-                                             f"id {frame.story_id} "
+                                             f"id {frame.post_id} "
                                              f"reactions {frame.reactions_total}"))
             os.remove(frame.local_file)
         else:

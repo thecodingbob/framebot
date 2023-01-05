@@ -18,13 +18,8 @@
                 }
             ]
         },
-        "_post_id": "id1",
-        "_story_id": {
-            "py/object": "model.FacebookStoryId",
-            "post_id": "id1",
-            "_value": null,
-            "_last_updated": null
-        },
+        "_photo_id": "id1",
+        "_post_id": "post_id1",
         "_url": "https://facebook.com/id1",
         "text": "Message 1",
         "_post_time": {
@@ -40,9 +35,7 @@
         },
         "_reactions_total": {
             "py/object": "model.FacebookReactionsTotal",
-            "story_id": {
-                "py/id": 3
-            },
+            "post_id": "post_id1",
             "_value": null,
             "_last_updated": null
         }
@@ -66,13 +59,8 @@
                 }
             ]
         },
-        "_post_id": "id2",
-        "_story_id": {
-            "py/object": "model.FacebookStoryId",
-            "post_id": "id2",
-            "_value": null,
-            "_last_updated": null
-        },
+        "_photo_id": "id2",
+        "_post_id": "post_id2",
         "_url": "https://facebook.com/id2",
         "text": "Message 2",
         "_post_time": {
@@ -88,9 +76,7 @@
         },
         "_reactions_total": {
             "py/object": "model.FacebookReactionsTotal",
-            "story_id": {
-                "py/id": 8
-            },
+            "post_id": "post_id2",
             "_value": null,
             "_last_updated": null
         }
@@ -114,13 +100,8 @@
                 }
             ]
         },
-        "_post_id": "id3",
-        "_story_id": {
-            "py/object": "model.FacebookStoryId",
-            "post_id": "id3",
-            "_value": null,
-            "_last_updated": null
-        },
+        "_photo_id": "id3",
+        "_post_id": "post_id3",
         "_url": "https://facebook.com/id3",
         "text": "Message 3",
         "_post_time": {
@@ -136,9 +117,7 @@
         },
         "_reactions_total": {
             "py/object": "model.FacebookReactionsTotal",
-            "story_id": {
-                "py/id": 13
-            },
+            "post_id": "post_id3",
             "_value": null,
             "_last_updated": null
         }

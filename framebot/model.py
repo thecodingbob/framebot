@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Union, Optional, TypeVar, Generic, Any, Callable
 
-from social import FacebookHelper
+from social import FacebookHelper, FacebookPostPhotoResponse
 
 T = TypeVar("T")
 
@@ -56,32 +56,18 @@ class RemoteValue(Generic[T]):
         return NotImplemented
 
 
-class FacebookStoryId(RemoteValue[str]):
-    """
-    Represents the story id for a Facebook post.
-    """
-    def __init__(self, post_id: str, facebook_helper: FacebookHelper):
-        """
-        Constructor
-        :param post_id: the post id
-        :param facebook_helper: helper to gather data from Facebook
-        """
-        self.post_id = post_id
-        super().__init__(lambda: facebook_helper.get_story_id(self.post_id))
-
-
 class FacebookReactionsTotal(RemoteValue[int]):
     """
     Reactions count for a facebook post
     """
-    def __init__(self, story_id: FacebookStoryId, facebook_helper: FacebookHelper):
+    def __init__(self, post_id: str, facebook_helper: FacebookHelper):
         """
         Constructor
-        :param story_id: the post story id
+        :param post_id: the post story id
         :param facebook_helper: helper to gather data from Facebook
         """
-        self.story_id = story_id
-        super().__init__(lambda: facebook_helper.get_reactions_total_count(self.story_id.value))
+        self.post_id = post_id
+        super().__init__(lambda: facebook_helper.get_reactions_total_count(self.post_id))
 
 
 class FacebookFrame(object):
@@ -96,20 +82,20 @@ class FacebookFrame(object):
         """
         self.number: int = number
         self.local_file: Path = local_file if type(local_file) is Path else Path(local_file)
+        self._photo_id: Optional[str] = None
         self._post_id: Optional[str] = None
-        self._story_id: Optional[FacebookStoryId] = None
         self._url: Optional[str] = None
         self.text: Optional[str] = None
         self._post_time: Optional[datetime] = None
         self._reactions_total: Optional[FacebookReactionsTotal] = None
 
     @property
-    def post_id(self) -> Optional[str]:
+    def photo_id(self) -> Optional[str]:
         """
-        The Facebook's post id after the frame has been posted
+        The Facebook's photo id after the frame has been posted
         :return: the post id
         """
-        return self._post_id
+        return self._photo_id
 
     @property
     def url(self) -> Optional[str]:
@@ -128,10 +114,10 @@ class FacebookFrame(object):
         return self._post_time
 
     @property
-    def story_id(self) -> Optional[str]:
-        if self._story_id is None:
+    def post_id(self) -> Optional[str]:
+        if self._post_id is None:
             return None
-        return self._story_id.value
+        return self._post_id
 
     @property
     def reactions_total(self) -> Optional[int]:
@@ -139,19 +125,19 @@ class FacebookFrame(object):
             return None
         return self._reactions_total.value
 
-    def mark_as_posted(self, post_id: str, facebook_helper: FacebookHelper):
+    def mark_as_posted(self, post_response: FacebookPostPhotoResponse, facebook_helper: FacebookHelper):
         """
         Marks a frame as posted and assings values to post id, url, post time, story id and reactions total
         :param facebook_helper: helper to get story id and reaction count
-        :param post_id: the post id
+        :param post_response: the post response containg photo and post id
         """
-        if post_id is None:
-            raise ValueError("Post id for a posted frame can't be None!")
-        self._post_id = post_id
-        self._url = f"https://facebook.com/{post_id}"
+        if post_response is None:
+            raise ValueError("Post response for a posted frame can't be None!")
+        self._photo_id = post_response.photo_id
+        self._url = f"https://facebook.com/{self._photo_id}"
         self._post_time = datetime.now()
-        self._story_id = FacebookStoryId(post_id=post_id, facebook_helper=facebook_helper)
-        self._reactions_total = FacebookReactionsTotal(story_id=self._story_id, facebook_helper=facebook_helper)
+        self._post_id = post_response.post_id
+        self._reactions_total = FacebookReactionsTotal(post_id=self._post_id, facebook_helper=facebook_helper)
 
     def __eq__(self, o: object) -> bool:
         if type(o) is type(self):
@@ -163,8 +149,8 @@ class FacebookFrame(object):
             "number": self.number,
             "local_file": self.local_file,
             "text": self.text,
-            "post_id": self.post_id,
+            "post_id": self.photo_id,
             "post_time": self.post_time,
-            "story_id": self.post_id,
+            "story_id": self.photo_id,
             "reactions_total": self.reactions_total
                 })
