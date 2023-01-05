@@ -20,7 +20,7 @@ import os
 
 from . import DEFAULT_WORKING_DIR
 from . import utils
-from .model import FacebookFrame
+from .model import FacebookFrame, FacebookReactionsTotal
 from .social import FacebookHelper
 
 
@@ -128,9 +128,12 @@ class BestOfReposter(FrameBotPlugin):
         if os.path.exists(self.yet_to_check_file):
             self.logger.info(f"Found existing {self.yet_to_check_file} file for best of checks, "
                              f"trying to load it...")
-            self.yet_to_check = utils.load_obj_from_json_file(self.yet_to_check_file)
-            print(self.yet_to_check)
-            self.yet_to_check.sort(key=lambda frame: frame.post_time)
+            self.yet_to_check: List[FacebookFrame] = utils.load_obj_from_json_file(self.yet_to_check_file)
+            self.yet_to_check.sort(key=lambda yet_to_check_frame: yet_to_check_frame.post_time)
+            # fallback temporary code to correctly handle migration from old bot versions
+            for frame in self.yet_to_check:
+                if frame._reactions_total is None:
+                    frame._reactions_total = FacebookReactionsTotal(frame.photo_id, self.facebook_helper)
 
     def _advance_bests(self) -> None:
         """

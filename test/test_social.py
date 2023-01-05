@@ -4,7 +4,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import Union
 from unittest import TestCase
-from unittest.mock import MagicMock, patch, DEFAULT
+from unittest.mock import MagicMock, patch, DEFAULT, call
 
 from PIL import Image
 from pyfacebook import FacebookError
@@ -101,6 +101,28 @@ class TestFacebookHelper(TestCase):
 
         self.assertEqual(REACTIONS, reactions)
         mock_method.assert_called_once_with(object_id=POST_ID, fields="reactions.summary(total_count)")
+
+        mock_method.reset_mock()
+        # called with a photo id
+        story_id = "story_id"
+        mock_method.side_effect = [FacebookError(kwargs={
+            "error": {
+                "code": 100,
+                "message": "Tried accessing nonexisting field (reactions)"
+            }
+        }),
+            {"page_story_id": story_id},
+            {"reactions": {"summary": {"total_count": REACTIONS}}}
+        ]
+        reactions = self.testee.get_reactions_total_count(POST_ID)
+        self.assertEqual(REACTIONS, reactions)
+        self.assertEqual(3, mock_method.call_count)
+        expected_calls = [
+            call(object_id=POST_ID, fields="reactions.summary(total_count)"),
+            call(object_id=POST_ID, fields="page_story_id"),
+            call(object_id=story_id, fields="reactions.summary(total_count)")
+        ]
+        mock_method.assert_has_calls(expected_calls)
 
 
 if __name__ == '__main__':

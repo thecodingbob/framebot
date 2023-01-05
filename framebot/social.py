@@ -98,5 +98,18 @@ class FacebookHelper(LoggingObject):
         :param post_id: the post's story id
         :return: the total reaction count
         """
-        return self.graph.get_object(object_id=post_id, fields="reactions.summary(total_count)")["reactions"][
-            "summary"]["total_count"]
+        try:
+            return self.graph.get_object(object_id=post_id, fields="reactions.summary(total_count)")["reactions"][
+                "summary"]["total_count"]
+        except FacebookError as e:
+            if e.code == 100: # nonexisting field, e.g. that's a normal photo id from old version of the bot
+                return self.get_reactions_total_count(self._get_story_id(post_id))
+            raise e
+
+    def _get_story_id(self, object_id: str) -> str:
+        """
+        Returns the story id for a given post. Here for compatibility reasons after code changes.
+        :param object_id: the object id
+        :return: the story id
+        """
+        return self.graph.get_object(object_id=object_id, fields="page_story_id")["page_story_id"]
