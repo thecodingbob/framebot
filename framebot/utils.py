@@ -10,7 +10,7 @@ import jsonpickle
 
 def safe_json_dump(fpath: Union[str, Path], obj: Any) -> None:
     """
-    Utility function used to avoid json file corruption in case of abrupt termination of the script.
+    Utility function used to avoid json file corruption in case of abrupt termination of the script
     :param fpath: path where the json has to be saved
     :param obj: the content to be saved
     """

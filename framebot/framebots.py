@@ -55,7 +55,7 @@ class SimpleFrameBot(Framebot):
             description
         :param frames_directory: Directory where the frame files are stored
         :param frames_ext: Extension of the frame files
-        :param frames_naming: Naming pattern of the frame files e.g frame$N$
+        :param frames_naming: Naming pattern of the frame files e.g. frame$N$
         :param upload_interval: time interval between one frame and the other
         :param bot_name: bot's name, currently used only in the mirrored posts
         :param delete_files: if this flag is enabled, the frame files will be deleted after those served their purpose
@@ -136,8 +136,8 @@ class SimpleFrameBot(Framebot):
 
     def _get_frame_index_number(self, file_path: Union[Path, str]) -> int:
         """
-        Using the frame naming regexp, extracts the frame number from the filename.
-        :param file_path: The path of the frame file.
+        Using the frame naming regexp, extracts the frame number from the filename
+        :param file_path: The path of the frame file
         :return: The frame number
         """
         return int(self.frames_naming.search(_get_filename(file_path)).group(1))

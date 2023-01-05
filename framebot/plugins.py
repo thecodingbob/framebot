@@ -32,8 +32,8 @@ class FrameBotPlugin(utils.LoggingObject):
         """
         Constructor
         :param depends_on: Signals this plugin depends on other plugins, and thus it cannot be used without these,
-        and also must act after its dependencies. Behavior for this is yet to be implemented.
-        :param local_directory: Local working directory for the plugin.
+        and also must act after its dependencies. Behavior for this is yet to be implemented
+        :param local_directory: Local working directory for the plugin
         """
         super().__init__()
         class_name = type(self).__name__
@@ -131,7 +131,7 @@ class BestOfReposter(FrameBotPlugin):
 
     def _advance_bests(self) -> None:
         """
-        Checks if there are frames to repost into the best-of album, and posts those if there are.
+        Checks if there are frames to repost into the best-of album, and posts them if so.
         """
         self.logger.info(f"Checking for best of reuploading...")
         try:
@@ -145,7 +145,7 @@ class BestOfReposter(FrameBotPlugin):
     def _check_and_post(self, frame: FacebookFrame) -> bool:
         """
         Checks if the time threshold time has passed, then checks the reactions count against the threshold,
-        and if so, reuploads the frame in the best-of album.
+        and if so, reuploads the frame in the best-of album
         :param frame: the frame to be checked
         :return: True if the frame has been checked, False if it's still too early
         """
@@ -222,13 +222,13 @@ class MirroredFramePoster(FrameBotPlugin):
                  bot_name: str = "MirrorBot", mirror_original_message: bool = True,
                  extra_message: str = None):
         """
-        Constructor.
+        Constructor
         :param facebook_helper: Helper to gather data and post it to Facebook
         :param album_id: The Facebook album where to post mirrored photos
         :param ratio: The percentage a frame has to be reposted mirrored
-        :param bot_name: The bot's name. Used in the default extra message.
-        :param mirror_original_message: Also mirrors the original text message along with the image.
-        :param extra_message: Message to attach to the frame. Default adds the bot's name as a sort of signature.
+        :param bot_name: The bot's name. Used in the default extra message
+        :param mirror_original_message: Also mirrors the original text message along with the image
+        :param extra_message: Message to attach to the frame. Default adds the bot's name as a sort of signature
         """
         super().__init__()
         self.facebook_helper: FacebookHelper = facebook_helper
@@ -244,7 +244,7 @@ class MirroredFramePoster(FrameBotPlugin):
 
     def _mirror_frame(self, frame: FacebookFrame) -> Image:
         """
-        Mirrors a frame and returns it.
+        Mirrors a frame and returns it
         :param frame: Frame to be mirrored
         :return the mirrored frame
         """
