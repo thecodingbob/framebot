@@ -3,13 +3,17 @@ import os
 import platform
 import sys
 from datetime import timedelta
+from os.path import dirname
+from pathlib import Path
 
 from framebot.framebots import SimpleFrameBot
 from plugins import BestOfReposter, MirroredFramePoster
 from social import FacebookHelper
 
+config_path = Path("config.ini")
+
 config = configparser.ConfigParser()
-config.read('config.ini', encoding='utf-8')
+config.read(config_path, encoding='utf-8')
 
 upload_interval = config.getint("bot_settings", "upload_interval")
 frames_directory = config["bot_settings"]["frames_directory"]
@@ -23,19 +27,19 @@ page_id = config["facebook"]["page_id"]
 if page_id == "":
     page_id = input("Insert page id:")
     config["facebook"]["page_id"] = page_id
-    with open("config.ini", "w") as cfg:
+    with open(config_path, "w") as cfg:
         config.write(cfg)
 access_token = config["facebook"]["access_token"]
 if access_token == "":
     access_token = input("Insert access token:")
     config["facebook"]["access_token"] = access_token
-    with open("config.ini", "w") as cfg:
+    with open(config_path, "w") as cfg:
         config.write(cfg)
 movie_title = config["bot_settings"]["movie_title"]
 if access_token == "":
     movie_title = input("Insert movie title:")
     config["bot_settings"]["movie_title"] = access_token
-    with open("config.ini", "w") as cfg:
+    with open(config_path, "w") as cfg:
         config.write(cfg)
 
 best_of_reposting_enabled = config.getboolean("best_of_album_uploader", "enabled")
@@ -81,6 +85,7 @@ if mirroring_enabled:
 bot = SimpleFrameBot(facebook_helper=facebook_helper, video_title=movie_title,
                      upload_interval=upload_interval, delete_files=delete_files, bot_name=bot_name,
                      frames_ext=frames_ext,
-                     frames_directory=frames_directory, frames_naming=frames_naming, plugins=plugins)
+                     frames_directory=frames_directory, frames_naming=frames_naming, plugins=plugins,
+                     working_dir=Path(dirname(config_path)))
 
 bot.start()

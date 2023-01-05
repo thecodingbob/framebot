@@ -31,7 +31,7 @@ class TestFrameBotPlugin(FileWritingTestCase):
 
         plugin_directory = plugins_directory.joinpath("my_custom_name")
         self.assertFalse(plugin_directory.exists())
-        FrameBotPlugin(local_directory=plugin_directory)
+        FrameBotPlugin(working_dir=plugin_directory)
         self.assertTrue(plugin_directory.exists())
 
 

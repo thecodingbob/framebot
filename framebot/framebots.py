@@ -17,10 +17,6 @@ from .social import FacebookHelper
 LAST_FRAME_UPLOADED_FILE = "last_frame_uploaded"
 
 
-def _remove_last_frame_uploaded_file():
-    if os.path.exists(LAST_FRAME_UPLOADED_FILE):
-        os.remove(LAST_FRAME_UPLOADED_FILE)
-
 
 def _get_filename(full_path: Union[str, Path]):
     """
@@ -48,7 +44,8 @@ class SimpleFrameBot(Framebot):
     def __init__(self, facebook_helper: FacebookHelper, video_title: str, frames_directory: Union[str, Path] = "frames",
                  frames_ext: str = "jpg", frames_naming: str = "$N$",
                  upload_interval: timedelta = timedelta(seconds=150), bot_name: str = "Bot",
-                 delete_files: bool = False, plugins: List[FrameBotPlugin] = None):
+                 delete_files: bool = False, plugins: List[FrameBotPlugin] = None,
+                 working_dir: Union[Path, str] = None):
         """"
         :param facebook_helper: Helper to gather data and post it to Facebook
         :param video_title: Title of the movie/episode/whatever you want to post. Will be showed in the posts
@@ -71,6 +68,11 @@ class SimpleFrameBot(Framebot):
         self.frames_directory = frames_directory if type(frames_directory) is Path else Path(frames_directory)
         self.frames_ext = frames_ext
         self.frames_naming = frames_naming
+        if working_dir is None:
+            working_dir = Path.home().joinpath("framebots")
+        self.working_dir = working_dir
+        self.working_dir.mkdir(parents=True, exist_ok=True)
+        self.last_frame_uploaded_file = self.working_dir.joinpath(LAST_FRAME_UPLOADED_FILE)
         if plugins is None:
             plugins = []
         self.plugins: List[FrameBotPlugin] = plugins
@@ -113,8 +115,8 @@ class SimpleFrameBot(Framebot):
         """
         Check if stored status exists and loads it
         """
-        if os.path.exists(LAST_FRAME_UPLOADED_FILE):
-            with open(LAST_FRAME_UPLOADED_FILE) as f:
+        if self.last_frame_uploaded_file.exists():
+            with open(self.last_frame_uploaded_file) as f:
                 self.last_frame_uploaded = int(f.read())
                 self.logger.info(f"Last frame uploaded is {self.last_frame_uploaded}.")
         else:
@@ -155,7 +157,7 @@ class SimpleFrameBot(Framebot):
         Stores the last uploaded frame number into a file for later resuming
         :param number: the latest frame uploaded's index number
         """
-        with open(LAST_FRAME_UPLOADED_FILE, "w") as f:
+        with open(self.last_frame_uploaded_file, "w") as f:
             self.last_frame_uploaded = number
             f.write(str(number))
 
@@ -168,7 +170,7 @@ class SimpleFrameBot(Framebot):
         self._upload_loop()
         for plugin in self.plugins:
             plugin.after_upload_loop()
-        _remove_last_frame_uploaded_file()
+        self.last_frame_uploaded_file.unlink()
 
     def _upload_loop(self) -> None:
         """

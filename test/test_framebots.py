@@ -5,7 +5,7 @@ from datetime import timedelta
 from pathlib import Path
 from unittest.mock import Mock, patch, mock_open
 
-from framebot.framebots import SimpleFrameBot, _remove_last_frame_uploaded_file, LAST_FRAME_UPLOADED_FILE, _get_filename
+from framebot.framebots import SimpleFrameBot, _get_filename
 from framebot.model import FacebookFrame
 from framebot.plugins import FrameBotPlugin
 from framebot.social import FacebookHelper
@@ -15,28 +15,6 @@ from test import RESOURCES_DIR
 
 
 class TestStaticMethods(unittest.TestCase):
-
-    @patch("os.path.exists")
-    @patch("os.remove")
-    def test_remove_last_frame_uploaded_file(self, mock_remove: Mock, mock_exists: Mock):
-        # file is there
-        mock_exists.return_value = True
-
-        _remove_last_frame_uploaded_file()
-
-        mock_remove.assert_called_once_with(LAST_FRAME_UPLOADED_FILE)
-        mock_exists.assert_called_once_with(LAST_FRAME_UPLOADED_FILE)
-
-        mock_exists.reset_mock()
-        mock_remove.reset_mock()
-
-        # file is not there
-        mock_exists.return_value = False
-
-        _remove_last_frame_uploaded_file()
-
-        mock_remove.assert_not_called()
-        mock_exists.assert_called_once_with(LAST_FRAME_UPLOADED_FILE)
 
     def test_get_filename(self):
         filename = "dummy"
@@ -56,7 +34,8 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.video_title = "Test video title"
         self.testee = SimpleFrameBot(
             facebook_helper=self.mock_helper,
-            video_title=self.video_title
+            video_title=self.video_title,
+            working_dir=self.test_dir
         )
         self.mock_plugin = Mock(spec=FrameBotPlugin)
 
@@ -86,6 +65,7 @@ class TestSimpleFrameBot(FileWritingTestCase):
 
         # frame list with some frames
         self._copy_frames_directory()
+        self.testee.last_frame_uploaded = -1
         self.testee._init_frames()
 
         expected_frames_paths = list(self.test_dir.joinpath("frames").glob("*.jpg"))
@@ -103,23 +83,24 @@ class TestSimpleFrameBot(FileWritingTestCase):
             self.assertEqual(i + self.testee.last_frame_uploaded + 1, frame.number)
             self.assertEqual(expected_frames_paths[i + self.testee.last_frame_uploaded], frame.local_file.absolute())
 
-    @patch("os.path.exists")
     @patch("builtins.open", new_callable=mock_open, read_data="13")
-    def test_init_status(self, mock_file: Mock, mock_exists: Mock):
+    def test_init_status(self, mock_file: Mock):
         # no last frame uploaded file
+        self.testee.last_frame_uploaded_file = Mock(spec=Path)
+        mock_exists: Mock = self.testee.last_frame_uploaded_file.exists
         mock_exists.return_value = False
         self.testee._init_status()
         self.assertEqual(-1, self.testee.last_frame_uploaded)
         mock_file.assert_not_called()
-        mock_exists.assert_called_once_with(LAST_FRAME_UPLOADED_FILE)
+        mock_exists.assert_called_once_with()
 
         # file found
         mock_exists.reset_mock()
         mock_exists.return_value = True
         self.testee._init_status()
         self.assertEqual(13, self.testee.last_frame_uploaded)
-        mock_file.assert_called_once_with(LAST_FRAME_UPLOADED_FILE)
-        mock_exists.assert_called_once_with(LAST_FRAME_UPLOADED_FILE)
+        mock_file.assert_called_once_with(self.testee.last_frame_uploaded_file)
+        mock_exists.assert_called_once_with()
 
     def test_get_frame_index_number(self):
         self.assertEqual(1, self.testee._get_frame_index_number("1.jpg"))
@@ -146,21 +127,20 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.testee._update_last_frame_uploaded(test_last_frame_uploaded)
 
         self.assertEqual(test_last_frame_uploaded, self.testee.last_frame_uploaded)
-        test_last_frame_uploaded_path = self.test_dir.joinpath(LAST_FRAME_UPLOADED_FILE)
+        test_last_frame_uploaded_path = self.test_dir.joinpath(self.testee.last_frame_uploaded_file)
         self.assertTrue(test_last_frame_uploaded_path.exists())
         with open(test_last_frame_uploaded_path) as f:
             self.assertEqual(str(test_last_frame_uploaded), f.read())
 
-    @patch("framebot.framebots._remove_last_frame_uploaded_file")
-    def test_start(self, mock_remove: Mock):
+    def test_start(self):
         self.testee.plugins.append(self.mock_plugin)
         self.testee._upload_loop = Mock()
-        self.testee._remove_last_frame_uploaded_file = Mock()
+        self.testee.last_frame_uploaded_file = Mock(spec=Path)
 
         self.testee.start()
 
         self.testee._upload_loop.assert_called_once()
-        mock_remove.assert_called_once()
+        self.testee.last_frame_uploaded_file.unlink.assert_called_once_with()
         self.mock_plugin.before_upload_loop.assert_called_once()
         self.mock_plugin.after_upload_loop.assert_called_once()
 

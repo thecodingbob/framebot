@@ -29,25 +29,25 @@ class FrameBotPlugin(utils.LoggingObject):
     and the single frame posting
     """
 
-    def __init__(self, depends_on: List[Type[FrameBotPlugin]] = None, local_directory: Path = None):
+    def __init__(self, depends_on: List[Type[FrameBotPlugin]] = None, working_dir: Path = None):
         """
         Constructor
         :param depends_on: Signals this plugin depends on other plugins, and thus it cannot be used without these,
         and also must act after its dependencies. Behavior for this is yet to be implemented
-        :param local_directory: Local working directory for the plugin
+        :param working_dir: Local working directory for the plugin
         """
         super().__init__()
         class_name = type(self).__name__
         self.logger.info(f"Initializing plugin {class_name}")
         if depends_on is None:
             depends_on = []
-        if local_directory is None:
-            local_directory = Path("plugins").joinpath(class_name)
+        if working_dir is None:
+            working_dir = Path("plugins").joinpath(class_name)
         self.depends_on: List[Type[FrameBotPlugin]] = depends_on
-        self.local_directory: Path = local_directory
+        self.working_dir: Path = working_dir
         self.dependencies: Dict[FrameBotPlugin] = {}
 
-        os.makedirs(self.local_directory, exist_ok=True)
+        os.makedirs(self.working_dir, exist_ok=True)
 
     def before_upload_loop(self) -> None:
         """
@@ -105,7 +105,7 @@ class BestOfReposter(FrameBotPlugin):
         self.reactions_threshold: int = reactions_threshold
         self.time_threshold: timedelta = time_threshold
         normalized_video_title = slugify.slugify(f"Best of {self.video_title}")
-        self.local_directory = self.local_directory.joinpath(normalized_video_title)
+        self.local_directory = self.working_dir.joinpath(normalized_video_title)
         self.yet_to_check_file: Path = self.local_directory.joinpath(yet_to_check_file)
         self.yet_to_check: List[FacebookFrame] = []
         self.album_path: Path = self.local_directory.joinpath("album")
