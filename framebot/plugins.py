@@ -113,8 +113,8 @@ class BestOfReposter(FrameBotPlugin):
         self.frames_dir: Path = self.working_dir.joinpath("frames_to_check")
         self.store_best_ofs: bool = store_best_ofs
 
-        self.logger.info(f"Best of reposting is enabled with threshold {self.reactions_threshold} and "
-                         f"{self.time_threshold} time threshold.")
+        self.logger.info(f"Best of reposting is enabled with a threshold of {self.reactions_threshold} reactions and "
+                         f"a time threshold of {self.time_threshold}.")
         self.logger.info(f"Best ofs will be saved locally in the directory '{self.album_path}' and "
                          f"reuploaded in the album with id {self.album_id}.")
         os.makedirs(self.working_dir, exist_ok=True)
@@ -133,6 +133,9 @@ class BestOfReposter(FrameBotPlugin):
             # fallback temporary code to correctly handle migration from old bot versions
             for frame in self.yet_to_check:
                 if frame._reactions_total is None:
+                    self.logger.warning(
+                        f"Attribute '_reactions_total' of loaded frame had no value."
+                        f"This should only happen right after migrating from an old framebot version.")
                     frame._reactions_total = FacebookReactionsTotal(frame.photo_id, self.facebook_helper)
 
     def _advance_bests(self) -> None:

@@ -107,7 +107,7 @@ class SimpleFrameBot(Framebot):
             self.total_frames_number = 0
         else:
             self.total_frames_number = self.frames[-1].number
-        self.logger.info(f"Found {len(self.frames)} frames.")
+        self.logger.info(f"Found {len(self.frames)} yet to upload frames.")
 
     def _init_status(self) -> None:
         """

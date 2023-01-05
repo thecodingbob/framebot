@@ -60,14 +60,6 @@ elif op_sys == "Linux":
 
 enabled_string = f'enabled with threshold {reactions_threshold} and {wait_hours} wait hours' \
     if mirroring_enabled else 'disabled'
-print(
-    f"Starting bot named {bot_name} for {movie_title}. Frames will be picked from directory {frames_directory} "
-    f"with {frames_ext} extension."
-    f"\nRandom mirroring is {('enabled with ratio ' + str(mirroring_ratio)) if mirroring_enabled else 'disabled'}."
-    f"\nBest of reposting is "
-    f"{enabled_string}."
-    f"\nThe bot will try to post a frame every {upload_interval} seconds and will "
-    f"{'' if delete_files else 'not '}delete those after it's done.\n")
 
 working_dir = Path(dirname(config_path))
 facebook_helper = FacebookHelper(access_token=access_token, page_id=page_id)
@@ -91,4 +83,5 @@ bot = SimpleFrameBot(facebook_helper=facebook_helper, video_title=movie_title,
                      frames_directory=frames_directory, frames_naming=frames_naming, plugins=plugins,
                      working_dir=working_dir)
 
-bot.start()
+if __name__ == '__main__':
+    bot.start()

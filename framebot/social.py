@@ -102,7 +102,9 @@ class FacebookHelper(LoggingObject):
             return self.graph.get_object(object_id=post_id, fields="reactions.summary(total_count)")["reactions"][
                 "summary"]["total_count"]
         except FacebookError as e:
-            if e.code == 100: # nonexisting field, e.g. that's a normal photo id from old version of the bot
+            if e.code == 100:  # nonexisting field, e.g. that's a normal photo id from old version of the bot
+                self.logger.warning(f"Tried calling 'get_reactions_total_count' with a photo id instead of a post id."
+                                    f"This should only happen right after migrating from an old framebot version.")
                 return self.get_reactions_total_count(self._get_story_id(post_id))
             raise e
 
