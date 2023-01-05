@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Optional, TypeVar, Generic, Any, Callable
+from typing import Union, Optional, TypeVar, Generic, Callable
 
 from social import FacebookHelper, FacebookPostPhotoResponse
 

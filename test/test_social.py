@@ -9,8 +9,7 @@ from unittest.mock import MagicMock, patch, DEFAULT
 from PIL import Image
 from pyfacebook import FacebookError
 
-from social import FacebookHelper, FacebookPostPhotoResponse
-
+from social import FacebookHelper
 from test import RESOURCES_DIR
 
 PHOTO_ID = "1"

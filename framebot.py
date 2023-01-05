@@ -54,13 +54,14 @@ if op_sys == "Windows":
 elif op_sys == "Linux":
     sys.stdout.write(f"\x1b]2;{window_title}\x07")
 
+enabled_string = f'enabled with threshold {reactions_threshold} and {wait_hours} wait hours' \
+    if mirroring_enabled else 'disabled'
 print(
     f"Starting bot named {bot_name} for {movie_title}. Frames will be picked from directory {frames_directory} "
     f"with {frames_ext} extension."
     f"\nRandom mirroring is {('enabled with ratio ' + str(mirroring_ratio)) if mirroring_enabled else 'disabled'}."
     f"\nBest of reposting is "
-    f"{f'enabled with threshold {reactions_threshold} and {wait_hours} wait hours' if mirroring_enabled else 'disabled'}"
-    f"."
+    f"{enabled_string}."
     f"\nThe bot will try to post a frame every {upload_interval} seconds and will "
     f"{'' if delete_files else 'not '}delete those after it's done.\n")
 facebook_helper = FacebookHelper(access_token=access_token, page_id=page_id)
