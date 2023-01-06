@@ -1,2 +1,4 @@
-facebook_sdk==3.1.0
-Pillow==9.1.1
+python-facebook-api==0.15.0
+Pillow==9.4.0
+jsonpickle==3.0.1
+python-slugify

@@ -1,0 +1,107 @@
+[
+    {
+        "py/object": "framebot.model.FacebookFrame",
+        "number": 2,
+        "local_file": {
+            "py/reduce": [
+                {
+                    "py/type": "pathlib.WindowsPath"
+                },
+                {
+                    "py/tuple": [
+                        "plugins",
+                        "BestOfReposter",
+                        "best-of-test",
+                        "frames_to_check",
+                        "dummy.jpg"
+                    ]
+                }
+            ]
+        },
+        "photo_id": "id1",
+        "post_id": "post_id1",
+        "url": "https://facebook.com/id1",
+        "text": "Message 1",
+        "post_time": {
+            "py/object": "datetime.datetime",
+            "__reduce__": [
+                {
+                    "py/type": "datetime.datetime"
+                },
+                [
+                    "B+YMHg4AMgj3qA=="
+                ]
+            ]
+        }
+    },
+    {
+        "py/object": "framebot.model.FacebookFrame",
+        "number": 3,
+        "local_file": {
+            "py/reduce": [
+                {
+                    "py/type": "pathlib.WindowsPath"
+                },
+                {
+                    "py/tuple": [
+                        "plugins",
+                        "BestOfReposter",
+                        "best-of-test",
+                        "frames_to_check",
+                        "dummy.jpg"
+                    ]
+                }
+            ]
+        },
+        "photo_id": "id2",
+        "post_id": "post_id2",
+        "url": "https://facebook.com/id2",
+        "text": "Message 2",
+        "post_time": {
+            "py/object": "datetime.datetime",
+            "__reduce__": [
+                {
+                    "py/type": "datetime.datetime"
+                },
+                [
+                    "B+YMHg4AMwj4ag=="
+                ]
+            ]
+        }
+    },
+    {
+        "py/object": "framebot.model.FacebookFrame",
+        "number": 4,
+        "local_file": {
+            "py/reduce": [
+                {
+                    "py/type": "pathlib.WindowsPath"
+                },
+                {
+                    "py/tuple": [
+                        "plugins",
+                        "BestOfReposter",
+                        "best-of-test",
+                        "frames_to_check",
+                        "dummy.jpg"
+                    ]
+                }
+            ]
+        },
+        "photo_id": "id3",
+        "post_id": "post_id3",
+        "url": "https://facebook.com/id3",
+        "text": "Message 3",
+        "post_time": {
+            "py/object": "datetime.datetime",
+            "__reduce__": [
+                {
+                    "py/type": "datetime.datetime"
+                },
+                [
+                    "B+YMHg4ANAkSIQ=="
+                ]
+            ]
+        }
+    }
+]
