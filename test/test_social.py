@@ -87,7 +87,7 @@ class TestFacebookHelper(TestCase):
                 src_image.save(im_bytes, "jpeg")
                 self.assertEqual(im_bytes.getvalue(), image)
 
-        self.assertEqual(test_message, call_args['message'])
+        self.assertEqual(test_message, call_args['data']['message'])
         self.assertEqual((PAGE_ID if album_id is None else album_id), call_args['object_id'])
         self.assertEqual("photos", call_args['connection'])
 

@@ -73,12 +73,13 @@ class FacebookHelper(LoggingObject):
                 if issubclass(type(image), (str, Path)):
                     with open(image, "rb") as im:
                         response = self.graph.post_object(object_id=album_id, connection="photos",
-                                                          files={"source": im}, message=message)
+                                                          files={"source": im}, data={"message": message})
                 else:
                     with BytesIO() as im_stream:
                         image.save(im_stream, "jpeg")
                         response = self.graph.post_object(object_id=album_id, connection="photos",
-                                                          files={"source": im_stream.getvalue()}, message=message)
+                                                          files={"source": im_stream.getvalue()},
+                                                          data={"message": message})
                 uploaded = True
                 return FacebookPostPhotoResponse.from_response_dict(response)
             except FacebookError as e:
