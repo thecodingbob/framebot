@@ -1,3 +1,6 @@
 name: on-push
 run-name: {{ github.actor }} is executing the on-push action
 on: [push]
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
