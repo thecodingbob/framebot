@@ -20,7 +20,7 @@ def main(config_directory: Path):
 
     bot_settings = config["bot_settings"]
     upload_interval = bot_settings.getint("upload_interval")
-    frames_directory = bot_settings.get("frames_directory")
+    frames_directory = Path(bot_settings.get("frames_directory"))
     frames_ext = bot_settings.get("frames_ext")
     frames_naming = bot_settings.get("frames_naming")
     movie_title = bot_settings.get("movie_title")
@@ -39,6 +39,8 @@ def main(config_directory: Path):
         sys.stdout.write(f"\x1b]2;{window_title}\x07")
 
     working_dir = Path(dirname(config_path))
+    if not frames_directory.is_absolute():
+        frames_directory = working_dir.joinpath(frames_directory).resolve()
     facebook_helper = FacebookHelper(access_token=access_token, page_id=page_id)
 
     plugins = []
