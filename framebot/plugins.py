@@ -183,7 +183,7 @@ class BestOfReposter(FrameBotPlugin):
         # make shallow copy so no parameters from original are overwritten
         frame = copy.copy(frame)
         # copy frame to temp dir
-        new_file_path = self.frames_dir.joinpath(frame.local_file.name)
+        new_file_path = self.frames_dir.joinpath(frame.local_file.name).resolve(strict=False)
         shutil.copyfile(frame.local_file, new_file_path)
         frame.local_file = new_file_path
         self.yet_to_check.append(frame)

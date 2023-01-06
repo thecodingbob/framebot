@@ -39,7 +39,7 @@ def migrate_bofc_json(source_dir: Union[Path, str], target_dir: Union[Path, str]
     frames_to_check_path.mkdir()
     for frame in old_frames:
         frame_file_name = Path(frame["path"]).name
-        new_frame_path = frames_to_check_path.joinpath(frame_file_name).absolute()
+        new_frame_path = frames_to_check_path.joinpath(frame_file_name).resolve(strict=False)
         shutil.copy(source_dir.joinpath("frames").joinpath(frame_file_name), new_frame_path)
         new_frame = FacebookFrame(
             local_file=new_frame_path,
