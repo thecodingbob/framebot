@@ -1,5 +1,5 @@
 
-name: on-push
+name: python-test
 
 run-name: {{ github.actor }} is executing the on-push action
 
