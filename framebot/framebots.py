@@ -1,13 +1,14 @@
 """
 Contains framebots implementations
 """
+import datetime
 import os
 import re
 import time
 from datetime import timedelta
 from pathlib import Path
 from re import Pattern
-from typing import List, AnyStr, Union
+from typing import List, Union
 
 from . import utils, DEFAULT_WORKING_DIR
 from .model import FacebookFrame
@@ -193,6 +194,11 @@ class SimpleFrameBot(Framebot):
         self.logger.info(f"Uploading frame {frame.number} of {self.total_frames_number}...")
 
         frame.text = self._get_default_message(frame.number)
-        frame.mark_as_posted(self.facebook_helper.upload_photo(frame.local_file, frame.text), self.facebook_helper)
+        response = self.facebook_helper.upload_photo(frame.local_file, frame.text)
+
+        frame.photo_id = response.photo_id
+        frame.post_id = response.post_id
+        frame.url = f"https://facebook.com/{frame.photo_id}"
+        frame.post_time = datetime.datetime.now()
 
         self._update_last_frame_uploaded(frame.number)

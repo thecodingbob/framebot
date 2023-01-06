@@ -20,7 +20,7 @@ import os
 
 from . import DEFAULT_WORKING_DIR
 from . import utils
-from .model import FacebookFrame, FacebookReactionsTotal
+from .model import FacebookFrame
 from .social import FacebookHelper
 
 
@@ -130,13 +130,6 @@ class BestOfReposter(FrameBotPlugin):
                              f"trying to load it...")
             self.yet_to_check: List[FacebookFrame] = utils.load_obj_from_json_file(self.yet_to_check_file)
             self.yet_to_check.sort(key=lambda yet_to_check_frame: yet_to_check_frame.post_time)
-            # fallback temporary code to correctly handle migration from old bot versions
-            for frame in self.yet_to_check:
-                if frame._reactions_total is None:
-                    self.logger.warning(
-                        f"Attribute '_reactions_total' of loaded frame had no value."
-                        f"This should only happen right after migrating from an old framebot version.")
-                    frame._reactions_total = FacebookReactionsTotal(frame.photo_id, self.facebook_helper)
 
     def _advance_bests(self) -> None:
         """
@@ -163,10 +156,11 @@ class BestOfReposter(FrameBotPlugin):
             return False
         self.logger.info(f"Checking entry {frame}...")
         if os.path.exists(frame.local_file):
-            if frame.reactions_total > self.reactions_threshold:
+            reactions_total = self.facebook_helper.get_reactions_total_count(frame.post_id)
+            if reactions_total > self.reactions_threshold:
                 self.logger.info(f"Uploading frame {frame.local_file} to best of album...")
                 message = f"Reactions after {elapsed_time.total_seconds() // 3600} hours : " \
-                          f"{frame.reactions_total}.\n" + \
+                          f"{reactions_total}.\n" + \
                           f"Original post: {frame.url}\n\n" + \
                           frame.text
                 self.facebook_helper.upload_photo(frame.local_file, message, self.album_id)
@@ -174,7 +168,7 @@ class BestOfReposter(FrameBotPlugin):
                                 os.path.join(self.album_path,
                                              f"Frame {frame.number} "
                                              f"id {frame.post_id} "
-                                             f"reactions {frame.reactions_total}"))
+                                             f"reactions {reactions_total}"))
             os.remove(frame.local_file)
         else:
             self.logger.warning(f"File {frame.local_file} is missing. Skipping best of check...")

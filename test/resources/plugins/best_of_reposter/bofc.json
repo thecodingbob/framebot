@@ -18,11 +18,11 @@
                 }
             ]
         },
-        "_photo_id": "id1",
-        "_post_id": "post_id1",
-        "_url": "https://facebook.com/id1",
+        "photo_id": "id1",
+        "post_id": "post_id1",
+        "url": "https://facebook.com/id1",
         "text": "Message 1",
-        "_post_time": {
+        "post_time": {
             "py/object": "datetime.datetime",
             "__reduce__": [
                 {
@@ -32,12 +32,6 @@
                     "B+YMHg4AMgj3qA=="
                 ]
             ]
-        },
-        "_reactions_total": {
-            "py/object": "framebot.model.FacebookReactionsTotal",
-            "post_id": "post_id1",
-            "_value": null,
-            "_last_updated": null
         }
     },
     {
@@ -59,11 +53,11 @@
                 }
             ]
         },
-        "_photo_id": "id2",
-        "_post_id": "post_id2",
-        "_url": "https://facebook.com/id2",
+        "photo_id": "id2",
+        "post_id": "post_id2",
+        "url": "https://facebook.com/id2",
         "text": "Message 2",
-        "_post_time": {
+        "post_time": {
             "py/object": "datetime.datetime",
             "__reduce__": [
                 {
@@ -73,12 +67,6 @@
                     "B+YMHg4AMwj4ag=="
                 ]
             ]
-        },
-        "_reactions_total": {
-            "py/object": "framebot.model.FacebookReactionsTotal",
-            "post_id": "post_id2",
-            "_value": null,
-            "_last_updated": null
         }
     },
     {
@@ -100,11 +88,11 @@
                 }
             ]
         },
-        "_photo_id": "id3",
-        "_post_id": "post_id3",
-        "_url": "https://facebook.com/id3",
+        "photo_id": "id3",
+        "post_id": "post_id3",
+        "url": "https://facebook.com/id3",
         "text": "Message 3",
-        "_post_time": {
+        "post_time": {
             "py/object": "datetime.datetime",
             "__reduce__": [
                 {
@@ -114,12 +102,6 @@
                     "B+YMHg4ANAkSIQ=="
                 ]
             ]
-        },
-        "_reactions_total": {
-            "py/object": "framebot.model.FacebookReactionsTotal",
-            "post_id": "post_id3",
-            "_value": null,
-            "_last_updated": null
         }
     }
 ]

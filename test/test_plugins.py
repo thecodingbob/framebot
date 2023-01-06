@@ -12,7 +12,7 @@ from pyfacebook import FacebookError
 from PIL import Image, ImageOps
 from framebot import utils
 
-from framebot.model import FacebookReactionsTotal, FacebookFrame
+from framebot.model import FacebookFrame
 from framebot.plugins import FrameBotPlugin, BestOfReposter, MirroredFramePoster
 from framebot.social import FacebookHelper
 from test import RESOURCES_DIR
@@ -37,8 +37,8 @@ class TestBestOfReposter(FileWritingTestCase):
         self.testee = BestOfReposter(facebook_helper=self.facebook_helper, album_id="album_id",
                                      video_title=self.video_title, working_dir=self.test_dir)
         self.test_frame = generate_test_frame()
-        self.test_frame._post_time = datetime.now()
-        self.test_frame._url = "https://example.com"
+        self.test_frame.post_time = datetime.now()
+        self.test_frame.url = "https://example.com"
 
     def test_defaults(self):
         default_reactions_threshold = 50
@@ -79,10 +79,9 @@ class TestBestOfReposter(FileWritingTestCase):
         exists_method = "os.path.exists"
         # not enough reactions
         with patch(exists_method, return_value=True) as mock_exists:
-            self.test_frame._reactions_total = FacebookReactionsTotal(
-                post_id="post_id", facebook_helper=Mock(spec=FacebookHelper))
-            self.test_frame._reactions_total._value = 99
-            self.test_frame._post_time = datetime.now() - timedelta(days=2)
+            reactions = 99
+            self.facebook_helper.get_reactions_total_count.return_value = reactions
+            self.test_frame.post_time = datetime.now() - timedelta(days=2)
             self.testee.reactions_threshold = 100
 
             self.assertTrue(self.testee._check_and_post(self.test_frame))
@@ -103,7 +102,7 @@ class TestBestOfReposter(FileWritingTestCase):
                                                   os.path.join(self.testee.album_path,
                                                                f"Frame {self.test_frame.number} "
                                                                f"id {self.test_frame.post_id} "
-                                                               f"reactions {self.test_frame.reactions_total}"))
+                                                               f"reactions {reactions}"))
             mock_exists.assert_called_once_with(self.test_frame.local_file)
 
         # missing file
