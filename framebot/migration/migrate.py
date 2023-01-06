@@ -13,7 +13,7 @@ from framebot.plugins import BestOfReposter
 from framebot.model import FacebookFrame
 from framebot.utils import safe_json_dump
 from framebot.framebots import LAST_FRAME_UPLOADED_FILE, SimpleFrameBot
-from social import FacebookHelper
+from framebot.social import FacebookHelper
 
 
 def _get_old_album_name(movie_title: str) -> str:
