@@ -19,7 +19,7 @@ def main(config_directory: Path):
     config.read(config_path, encoding='utf-8')
 
     bot_settings = config["bot_settings"]
-    upload_interval = bot_settings.getint("upload_interval")
+    upload_interval = timedelta(seconds=bot_settings.getint("upload_interval"))
     frames_directory = Path(bot_settings.get("frames_directory"))
     frames_ext = bot_settings.get("frames_ext")
     frames_naming = bot_settings.get("frames_naming")
