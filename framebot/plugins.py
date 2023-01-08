@@ -159,7 +159,7 @@ class BestOfReposter(FrameBotPlugin):
             reactions_total = self.facebook_helper.get_reactions_total_count(frame.post_id)
             if reactions_total > self.reactions_threshold:
                 self.logger.info(f"Uploading frame {frame.local_file} to best of album...")
-                message = f"Reactions after {elapsed_time.total_seconds() // 3600} hours : " \
+                message = f"Reactions after {int(elapsed_time.total_seconds() / 3600)} hours : " \
                           f"{reactions_total}.\n" + \
                           f"Original post: {frame.url}\n\n" + \
                           frame.text
