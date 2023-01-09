@@ -32,6 +32,8 @@ class TestSimpleFrameBot(FileWritingTestCase):
         super().setUp()
         self.mock_helper = Mock(spec=FacebookHelper)
         self.video_title = "Test video title"
+        frames_directory = self.test_dir.joinpath("frames")
+        frames_directory.mkdir(parents=True, exist_ok=True)
         self.testee = SimpleFrameBot(
             facebook_helper=self.mock_helper,
             video_title=self.video_title,
@@ -41,7 +43,7 @@ class TestSimpleFrameBot(FileWritingTestCase):
 
     def _copy_frames_directory(self):
         shutil.copytree(RESOURCES_DIR.joinpath("framebots").joinpath("simple_framebot").joinpath("frames"),
-                        self.test_dir.joinpath("frames"))
+                        self.test_dir.joinpath("frames"), dirs_exist_ok=True)
 
     def test_init(self):
         self.assertEqual([], self.testee.plugins)
