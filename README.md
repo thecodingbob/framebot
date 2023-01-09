@@ -4,8 +4,11 @@ A Facebook framebot supporting the reupload of most reacted frames and random mi
 ## Requirements
 - Python >= 3.7: https://www.python.org/downloads/
 
-You can install the other required packages with `pip install -r requirements.txt`. You may have to use pip3 and sudo 
-if you're on Linux/Mac, depending on your configuration.
+## Installation
+```
+pip install framebot
+```
+If you're on Linux/Mac, depending on your configuration, you may have to use pip3 and sudo. 
 ## Usage
 - Create a page on Facebook
 - Take note of your Page id. You can find it in the "about" section of your page
@@ -16,7 +19,7 @@ if you're on Linux/Mac, depending on your configuration.
 - Paste the generated access token and the page id in the `config.ini` file 
 - Configure the other options in the `config.ini` file as you like
 - Put the frames you want to post in the `frames/` directory in the same parent directory where you put the configuration file (or change the folder name in the `config.ini` file and put the frames in the folder with that name)
-- Open a powershell/bash/any shell you like window in the directory where you cloned this repository and run `python -m framebot -d config_directory`, where `config_directory` is the directory where you stored the configuration files
+- Open a powershell/bash/any shell you like window in the directory where you cloned this repository and run `framebot -d config_directory`, where `config_directory` is the directory where you stored the configuration files
 ## Configuration
 You can change the bot's behavior editing the options in the `config.ini` file, which is divided in four sections:
 - **facebook**
@@ -48,8 +51,9 @@ It is advised to do a backup of your running configuration files and frames befo
 
 To run the migration script, position yourself in the directory where your cloned this repository, powershell/bash/any
 shell you like window, and run 
-
-`python -m framebot.migration -s source_directory [-t target_directory]`
+```
+framebot-migrate -s source_directory [-t target_directory]
+```
 
 where `source_directory` is the directory where the existing configuration is, and `target_directory` is the directory
 where you want the migrated framebot configuration to be stored. If you omit the `target_directory` parameter, the 
