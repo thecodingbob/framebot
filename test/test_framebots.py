@@ -1,7 +1,9 @@
 import re
 import shutil
+import sys
 import unittest
 from datetime import timedelta
+from distutils.dir_util import copy_tree
 from pathlib import Path
 from unittest.mock import Mock, patch, mock_open
 
@@ -42,8 +44,12 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.mock_plugin = Mock(spec=FrameBotPlugin)
 
     def _copy_frames_directory(self):
-        shutil.copytree(RESOURCES_DIR.joinpath("framebots").joinpath("simple_framebot").joinpath("frames"),
-                        self.test_dir.joinpath("frames"), dirs_exist_ok=True)
+        if sys.version_info[0] == 3 and sys.version_info[1] == 7:
+            copy_tree(str(RESOURCES_DIR.joinpath("framebots").joinpath("simple_framebot").joinpath("frames")),
+                      str(self.test_dir.joinpath("frames")))
+        else:
+            shutil.copytree(RESOURCES_DIR.joinpath("framebots").joinpath("simple_framebot").joinpath("frames"),
+                            self.test_dir.joinpath("frames"), dirs_exist_ok=True)
 
     def test_init(self):
         self.assertEqual([], self.testee.plugins)
