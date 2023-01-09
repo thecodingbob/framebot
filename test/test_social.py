@@ -76,7 +76,12 @@ class TestFacebookHelper(TestCase):
         self.assertEqual(response.post_id, POST_ID)
 
         self.assertEqual(expected_calls, mock_method.call_count)
-        call_args = mock_method.call_args.kwargs
+        call_args = mock_method.call_args
+        if type(call_args.kwargs) == dict:
+            call_args = call_args.kwargs
+        else:
+            # python 3.7
+            call_args = call_args[1]
         image = call_args['files']['source']
         if not issubclass(type(src_image), Image.Image):
             self.assertTrue(image.closed)

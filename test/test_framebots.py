@@ -1,7 +1,9 @@
 import re
 import shutil
+import sys
 import unittest
 from datetime import timedelta
+from distutils.dir_util import copy_tree
 from pathlib import Path
 from unittest.mock import Mock, patch, mock_open
 
@@ -32,6 +34,8 @@ class TestSimpleFrameBot(FileWritingTestCase):
         super().setUp()
         self.mock_helper = Mock(spec=FacebookHelper)
         self.video_title = "Test video title"
+        frames_directory = self.test_dir.joinpath("frames")
+        frames_directory.mkdir(parents=True, exist_ok=True)
         self.testee = SimpleFrameBot(
             facebook_helper=self.mock_helper,
             video_title=self.video_title,
@@ -40,8 +44,12 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.mock_plugin = Mock(spec=FrameBotPlugin)
 
     def _copy_frames_directory(self):
-        shutil.copytree(RESOURCES_DIR.joinpath("framebots").joinpath("simple_framebot").joinpath("frames"),
-                        self.test_dir.joinpath("frames"))
+        if sys.version_info[0] == 3 and sys.version_info[1] == 7:
+            copy_tree(str(RESOURCES_DIR.joinpath("framebots").joinpath("simple_framebot").joinpath("frames")),
+                      str(self.test_dir.joinpath("frames")))
+        else:
+            shutil.copytree(RESOURCES_DIR.joinpath("framebots").joinpath("simple_framebot").joinpath("frames"),
+                            self.test_dir.joinpath("frames"), dirs_exist_ok=True)
 
     def test_init(self):
         self.assertEqual([], self.testee.plugins)
@@ -70,10 +78,11 @@ class TestSimpleFrameBot(FileWritingTestCase):
 
         expected_frames_paths = list(filter(lambda p: bool(self.testee._frames_naming.match(p.name)),
                                             self.test_dir.joinpath("frames").glob("*.jpg")))
+        expected_frames_paths.sort(key=lambda p: int(re.search("^(\\d+)\\.jpg$", p.name).group(1)))
         self.assertEqual(len(expected_frames_paths), len(self.testee.frames))
         for i, frame in enumerate(self.testee.frames):
             self.assertEqual(i + 1, frame.number)
-            self.assertEqual(expected_frames_paths[i], frame.local_file.absolute())
+            self.assertEqual(expected_frames_paths[i], frame.local_file)
 
         # start from later frame
         self.testee.last_frame_uploaded = 5
@@ -82,7 +91,7 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.assertEqual(len(expected_frames_paths) - self.testee.last_frame_uploaded, len(self.testee.frames))
         for i, frame in enumerate(self.testee.frames):
             self.assertEqual(i + self.testee.last_frame_uploaded + 1, frame.number)
-            self.assertEqual(expected_frames_paths[i + self.testee.last_frame_uploaded], frame.local_file.absolute())
+            self.assertEqual(expected_frames_paths[i + self.testee.last_frame_uploaded], frame.local_file)
 
     @patch("builtins.open", new_callable=mock_open, read_data="13")
     def test_init_status(self, mock_file: Mock):

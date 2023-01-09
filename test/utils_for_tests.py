@@ -12,7 +12,7 @@ from test import RESOURCES_DIR
 class FileWritingTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.test_dir = Path(tempfile.mkdtemp())
+        self.test_dir = Path(tempfile.mkdtemp()).resolve(strict=False)
         os.chdir(self.test_dir)
 
     def tearDown(self) -> None:
