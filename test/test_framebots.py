@@ -75,7 +75,7 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.assertEqual(len(expected_frames_paths), len(self.testee.frames))
         for i, frame in enumerate(self.testee.frames):
             self.assertEqual(i + 1, frame.number)
-            self.assertEqual(expected_frames_paths[i], frame.local_file.absolute())
+            self.assertEqual(expected_frames_paths[i], frame.local_file)
 
         # start from later frame
         self.testee.last_frame_uploaded = 5
@@ -84,7 +84,7 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.assertEqual(len(expected_frames_paths) - self.testee.last_frame_uploaded, len(self.testee.frames))
         for i, frame in enumerate(self.testee.frames):
             self.assertEqual(i + self.testee.last_frame_uploaded + 1, frame.number)
-            self.assertEqual(expected_frames_paths[i + self.testee.last_frame_uploaded], frame.local_file.absolute())
+            self.assertEqual(expected_frames_paths[i + self.testee.last_frame_uploaded], frame.local_file)
 
     @patch("builtins.open", new_callable=mock_open, read_data="13")
     def test_init_status(self, mock_file: Mock):
