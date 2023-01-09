@@ -101,7 +101,7 @@ class SimpleFrameBot(Framebot):
         """
         self.frames: List[FacebookFrame] = []
         for frame_path in self.frames_directory.glob(f"*.{self.frames_ext}"):
-            loaded_frame = FacebookFrame(self._get_frame_index_number(frame_path), frame_path.resolve(strict=True))
+            loaded_frame = FacebookFrame(self._get_frame_index_number(frame_path), frame_path)
             if loaded_frame.number > self.last_frame_uploaded:
                 self.frames.append(loaded_frame)
         self.frames.sort(key=lambda frame: frame.number)
