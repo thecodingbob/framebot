@@ -7,14 +7,20 @@ from datetime import timedelta
 from os.path import dirname
 from pathlib import Path
 
-from framebot.framebots import SimpleFrameBot
-from framebot.plugins import BestOfReposter, MirroredFramePoster
-from framebot.social import FacebookHelper
-from framebot.utils import get_logger
+from .framebots import SimpleFrameBot
+from .plugins import BestOfReposter, MirroredFramePoster
+from .social import FacebookHelper
+from .utils import get_logger
 
 
-def main(config_directory: Path):
+def main():
+    parser = init_argparse()
+    args = parser.parse_args()
+
+    config_directory = args.directory
+
     logger = get_logger("main")
+
     config_path = config_directory.joinpath("config.ini")
 
     if not config_path.exists():
@@ -95,6 +101,4 @@ def init_argparse() -> argparse.ArgumentParser:
 
 
 if __name__ == '__main__':
-    parser = init_argparse()
-    args = parser.parse_args()
-    main(args.directory)
+    main()

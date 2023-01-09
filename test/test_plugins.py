@@ -3,9 +3,7 @@ import inspect
 import shutil
 import unittest
 import os
-import slugify
 from datetime import timedelta, datetime
-from pathlib import Path
 from unittest.mock import Mock, patch, DEFAULT
 from pyfacebook import FacebookError
 

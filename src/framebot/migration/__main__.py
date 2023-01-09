@@ -1,7 +1,15 @@
 import argparse
 from pathlib import Path
 
-from framebot.migration.migrate import migrate
+from .migrate import migrate
+
+
+def main():
+    parser = init_argparse()
+    args = parser.parse_args()
+    source = args.source
+    target = args.target if args.target is not None else args.source
+    migrate(source, target)
 
 
 def init_argparse() -> argparse.ArgumentParser:
@@ -18,8 +26,4 @@ def init_argparse() -> argparse.ArgumentParser:
 
 
 if __name__ == "__main__":
-    parser = init_argparse()
-    args = parser.parse_args()
-    source = args.source
-    target = args.target if args.target is not None else args.source
-    migrate(source, target)
+    main()
