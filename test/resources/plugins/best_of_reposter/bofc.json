@@ -5,7 +5,7 @@
         "local_file": {
             "py/reduce": [
                 {
-                    "py/type": "pathlib.WindowsPath"
+                    "py/type": "pathlib.PurePath"
                 },
                 {
                     "py/tuple": [
@@ -40,7 +40,7 @@
         "local_file": {
             "py/reduce": [
                 {
-                    "py/type": "pathlib.WindowsPath"
+                    "py/type": "pathlib.PurePath"
                 },
                 {
                     "py/tuple": [
@@ -75,7 +75,7 @@
         "local_file": {
             "py/reduce": [
                 {
-                    "py/type": "pathlib.WindowsPath"
+                    "py/type": "pathlib.PurePath"
                 },
                 {
                     "py/tuple": [
