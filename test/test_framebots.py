@@ -76,7 +76,8 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.testee.last_frame_uploaded = -1
         self.testee._init_frames()
 
-        expected_frames_paths = list(self.test_dir.joinpath("frames").glob("*.jpg"))
+        expected_frames_paths = list(filter(lambda p: bool(self.testee._frames_naming.match(p.name)),
+                                            self.test_dir.joinpath("frames").glob("*.jpg")))
         expected_frames_paths.sort(key=lambda p: int(re.search("^(\\d+)\\.jpg$", p.name).group(1)))
         self.assertEqual(len(expected_frames_paths), len(self.testee.frames))
         for i, frame in enumerate(self.testee.frames):

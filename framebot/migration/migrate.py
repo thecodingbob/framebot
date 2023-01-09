@@ -50,7 +50,7 @@ def migrate_bofc_json(source_dir: Union[Path, str], target_dir: Union[Path, str]
         new_frame.url = f"https://facebook.com/{new_frame.photo_id}"
         new_frame.reactions_total = None
         new_frame.post_time = datetime.datetime.fromisoformat(frame["time"])
-        new_frame.message = framebot._get_default_message(new_frame.number)
+        new_frame.text = framebot._get_default_message(new_frame.number)
         new_frames.append(new_frame)
     safe_json_dump(target_dir.joinpath("bofc.json"), new_frames)
 

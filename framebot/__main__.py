@@ -10,10 +10,17 @@ from pathlib import Path
 from framebot.framebots import SimpleFrameBot
 from framebot.plugins import BestOfReposter, MirroredFramePoster
 from framebot.social import FacebookHelper
+from framebot.utils import get_logger
 
 
 def main(config_directory: Path):
+    logger = get_logger("main")
     config_path = config_directory.joinpath("config.ini")
+
+    if not config_path.exists():
+        logger.error(f"No 'config.ini' file found in the provided directory: {config_directory}."
+                     f" Unable to start the bot.")
+        exit()
 
     config = configparser.ConfigParser()
     config.read(config_path, encoding='utf-8')

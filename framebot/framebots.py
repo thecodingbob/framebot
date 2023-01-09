@@ -101,9 +101,14 @@ class SimpleFrameBot(Framebot):
         """
         self.frames: List[FacebookFrame] = []
         for frame_path in self.frames_directory.glob(f"*.{self.frames_ext}"):
-            loaded_frame = FacebookFrame(self._get_frame_index_number(frame_path), frame_path)
-            if loaded_frame.number > self.last_frame_uploaded:
-                self.frames.append(loaded_frame)
+            try:
+                index_number = self._get_frame_index_number(frame_path)
+                if index_number > self.last_frame_uploaded:
+                    self.frames.append(FacebookFrame(index_number, frame_path.resolve(strict=True)))
+            except AttributeError:
+                # doesn't match the regex: not a valid frame
+                self.logger.warning(f"File {frame_path} doesn't match the naming regex {self._frames_naming}. Bot will"
+                                    f" not load it as a frame.")
         self.frames.sort(key=lambda frame: frame.number)
         if len(self.frames) == 0:
             self.total_frames_number = 0
