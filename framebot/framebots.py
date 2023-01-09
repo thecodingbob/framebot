@@ -66,10 +66,11 @@ class SimpleFrameBot(Framebot):
         self.video_title = video_title
         self.upload_interval = upload_interval
         self.delete_files = delete_files
-        self.frames_directory = frames_directory if type(frames_directory) is Path else Path(frames_directory)
+        self.frames_directory = (frames_directory if type(frames_directory) is Path else Path(frames_directory))\
+            .resolve(strict=True)
         self.frames_ext = frames_ext
         self.frames_naming = frames_naming
-        self.working_dir = working_dir
+        self.working_dir = working_dir.resolve(strict=False)
         self.working_dir.mkdir(parents=True, exist_ok=True)
         self.last_frame_uploaded_file = self.working_dir.joinpath(LAST_FRAME_UPLOADED_FILE)
         if plugins is None:
