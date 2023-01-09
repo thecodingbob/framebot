@@ -4,9 +4,9 @@ requires = ["setuptools>=65.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "framebot"
+name = "pyframebot"
 version = "1.0.0"
-description = "A frame posting bot for Facebook pages"
+description = "A frame-posting bot for Facebook pages"
 readme = "README.md"
 authors = [{ name = "TheCodingBob", email = "vey90@live.it" }]
 license = { file = "LICENSE" }
