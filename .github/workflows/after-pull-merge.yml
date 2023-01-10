@@ -4,15 +4,12 @@ on:
     workflows: [ "python-test" ]
     types:
       - completed
-  pull_request:
-    types:
-      - closed
     branches:
       - 'main'
 
 jobs:
   advance-minor:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
