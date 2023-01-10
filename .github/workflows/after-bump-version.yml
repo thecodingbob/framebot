@@ -4,15 +4,13 @@ on:
     workflows: [ "python-test" ]
     types:
       - completed
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - 'main'
 
 jobs:
-  advance-minor:
-    if: github.event.pull_request.merged == true
+  advance-and-release:
+    if: ${{ contains(github.event.head_commit.message, 'bump version') }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -21,9 +19,11 @@ jobs:
       with:
         python-version: "3.x"
       run: |
-        pip install bumpver build
-    - name: Update minor version
+        pip install build
+    - name: Build
       run: |
-        bumpver update --minor
-
-
+        python -m build
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
