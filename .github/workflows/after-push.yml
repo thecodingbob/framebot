@@ -1,0 +1,26 @@
+name: python-release-patch
+on:
+  workflow_run:
+    workflows: [ "python-test" ]
+    types:
+      - completed
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  advance-patch:
+    if: ${{ !contains(github.event.head_commit.message, 'bump version') }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    - name: Install dependencies
+      run: |
+        pip install bumpver build
+    - name: Update patch version
+      run: |
+        bumpver update --patch

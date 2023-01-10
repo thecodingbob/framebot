@@ -9,11 +9,11 @@ from unittest.mock import Mock
 
 from slugify import slugify
 
-from framebot.plugins import BestOfReposter
-from framebot.model import FacebookFrame
-from framebot.utils import safe_json_dump
-from framebot.framebots import LAST_FRAME_UPLOADED_FILE, SimpleFrameBot
-from framebot.social import FacebookHelper
+from ..model import FacebookFrame
+from ..plugins import BestOfReposter
+from ..utils import safe_json_dump
+from ..framebots import LAST_FRAME_UPLOADED_FILE, SimpleFrameBot
+from ..social import FacebookHelper
 
 
 def _get_old_album_name(movie_title: str) -> str:
