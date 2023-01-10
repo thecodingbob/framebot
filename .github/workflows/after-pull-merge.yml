@@ -1,4 +1,4 @@
-name: python-release
+name: python-release-minor
 on:
   workflow_run:
     workflows: [ "python-test" ]

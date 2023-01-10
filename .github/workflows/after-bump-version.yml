@@ -1,4 +1,4 @@
-name: python-release
+name: python-release-patch
 on:
   workflow_run:
     workflows: [ "python-test" ]
