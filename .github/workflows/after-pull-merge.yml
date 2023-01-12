@@ -1,18 +1,19 @@
-name: python-release-minor
+name: framebot-after-pull-merge
 on:
-  workflow_run:
-    workflows: [ "python-test" ]
+  pull_request:
     types:
-      - completed
-    branches:
-      - 'main'
+      - closed
+    branches: [main]
 
 jobs:
-  advance-minor:
-    if: github.event.pull_request.merged == true && ${{ github.event.workflow_run.conclusion == 'success' }}
+  test:
+     uses: ./.github/workflows/python-test.yml
+  advance-minor-and-publish:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout project
+      uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -20,8 +21,17 @@ jobs:
     - name: Install dependencies
       run: |
         pip install bumpver build
+    - name: Setup git user
+      uses: fregante/setup-git-user@v1
     - name: Update minor version
       run: |
         bumpver update --minor
+    - name: Build
+      run: |
+        python -m build
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
 
 

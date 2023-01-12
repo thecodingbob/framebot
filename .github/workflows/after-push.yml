@@ -1,16 +1,16 @@
-name: python-release-patch
+name: framebot-after-push
 on:
-  workflow_run:
-    workflows: [ "python-test" ]
-    types:
-      - completed
-
+  push:
+    branches: [main]
 jobs:
-  advance-patch:
-    if: ${{ !contains(github.event.head_commit.message, 'bump version') }} && ${{ github.event.workflow_run.conclusion == 'success' }}
+  test:
+     uses: ./.github/workflows/python-test.yml
+  advance-patch-and-publish:
+    if: ${{ !contains(github.event.head_commit.message, 'bump version') }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout project
+      uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -18,6 +18,15 @@ jobs:
     - name: Install dependencies
       run: |
         pip install bumpver build
+    - name: Setup git user
+      uses: fregante/setup-git-user@v1
     - name: Update patch version
       run: |
         bumpver update --patch
+    - name: Build
+      run: |
+        python -m build
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}

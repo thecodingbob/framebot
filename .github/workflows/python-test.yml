@@ -1,5 +1,5 @@
 name: python-test
-on: [push]
+on: workflow_call
 jobs:
   unit-test:
     runs-on: ${{ matrix.os }}
