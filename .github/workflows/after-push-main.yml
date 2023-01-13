@@ -1,4 +1,4 @@
-name: framebot-after-pull-merge
+name: Framebot after push (main)
 on:
   push:
     branches: [main]

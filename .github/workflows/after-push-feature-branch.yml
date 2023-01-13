@@ -1,4 +1,4 @@
-name: framebot-after-push
+name: Framebot after push (feature branch)
 on:
   push:
     branches-ignore: [main]
