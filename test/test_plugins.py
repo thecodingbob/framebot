@@ -84,7 +84,7 @@ class TestBestOfReposter(FileWritingTestCase):
 
             self.assertTrue(self.testee._check_and_post(self.test_frame))
             mock_remove.assert_called_once_with(self.test_frame.local_file)
-            self.assertFalse(self.facebook_helper.upload_photo.called)
+            self.assertFalse(self.facebook_helper.post_photo.called)
             self.assertFalse(mock_copyfile.called)
             mock_exists.assert_called_once_with(self.test_frame.local_file)
 
@@ -95,7 +95,7 @@ class TestBestOfReposter(FileWritingTestCase):
 
             self.assertTrue(self.testee._check_and_post(self.test_frame))
             mock_remove.assert_called_once_with(self.test_frame.local_file)
-            self.assertTrue(self.facebook_helper.upload_photo.called)
+            self.assertTrue(self.facebook_helper.post_photo.called)
             mock_copyfile.assert_called_once_with(self.test_frame.local_file,
                                                   os.path.join(self.testee.album_path,
                                                                f"Frame {self.test_frame.number} "
