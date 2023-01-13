@@ -29,19 +29,19 @@ class TestFacebookHelper(TestCase):
         self.testee = FacebookHelper(access_token=ACCESS_TOKEN, page_id=PAGE_ID)
         self.mock_graph: MagicMock = self.testee.graph
 
-    def test_upload_photo(self):
-        self._test_upload_photo(DUMMY_IMAGE)
-        self._test_upload_photo(str(DUMMY_IMAGE))
-        self._test_upload_photo(Image.open(DUMMY_IMAGE))
-        self._test_upload_photo(DUMMY_IMAGE, "some_album")
+    def test_post_photo(self):
+        self._test_post_photo(DUMMY_IMAGE)
+        self._test_post_photo(str(DUMMY_IMAGE))
+        self._test_post_photo(Image.open(DUMMY_IMAGE))
+        self._test_post_photo(DUMMY_IMAGE, "some_album")
 
-    def test_upload_photo_errors(self):
+    def test_post_photo_errors(self):
         test_message = "You'll never see this"
 
         mock_method: MagicMock = self.mock_graph.post_object
         mock_method.side_effect = FileNotFoundError
 
-        self.assertRaises(FileNotFoundError, self.testee.upload_photo, DUMMY_IMAGE, test_message)
+        self.assertRaises(FileNotFoundError, self.testee.post_photo, DUMMY_IMAGE, test_message)
         mock_method.assert_called_once()
 
         mock_method.reset_mock()
@@ -56,22 +56,22 @@ class TestFacebookHelper(TestCase):
         mock_method.side_effect = fake_error
         max_retries = 2
         retry_time = timedelta()
-        self.assertRaises(FacebookError, self.testee.upload_photo, image=DUMMY_IMAGE, message=test_message,
+        self.assertRaises(FacebookError, self.testee.post_photo, image=DUMMY_IMAGE, message=test_message,
                           max_retries=max_retries, retry_time=retry_time)
         self.assertEqual(max_retries + 1, mock_method.call_count)
 
         mock_method.reset_mock()
         mock_method.side_effect = [fake_error, DEFAULT]
-        self._test_upload_photo(DUMMY_IMAGE, max_retries=max_retries, retry_time=retry_time,
-                                expected_calls=2)
+        self._test_post_photo(DUMMY_IMAGE, max_retries=max_retries, retry_time=retry_time,
+                              expected_calls=2)
 
-    def _test_upload_photo(self, src_image: Union[Path, str, Image.Image], album_id=None, max_retries=0,
-                           retry_time=timedelta(), expected_calls=1):
+    def _test_post_photo(self, src_image: Union[Path, str, Image.Image], album_id=None, max_retries=0,
+                         retry_time=timedelta(), expected_calls=1):
         mock_method: MagicMock = self.mock_graph.post_object
         mock_method.return_value = {"id": PHOTO_ID, "post_id": POST_ID}
 
         test_message = "Test photo upload"
-        response = self.testee.upload_photo(src_image, test_message, album_id, max_retries, retry_time)
+        response = self.testee.post_photo(src_image, test_message, album_id, max_retries, retry_time)
         self.assertEqual(response.photo_id, PHOTO_ID)
         self.assertEqual(response.post_id, POST_ID)
 

@@ -53,8 +53,8 @@ class FacebookHelper(LoggingObject):
 
         self.logger.info(f"Initialized GraphAPI for Facebook. Page id is {self.page_id}.")
 
-    def upload_photo(self, image: Union[Path, str, Image], message: str, album_id: str = None,
-                     max_retries: int = 5, retry_time: timedelta = timedelta(minutes=3)) -> FacebookPostPhotoResponse:
+    def post_photo(self, image: Union[Path, str, Image], message: str, album_id: str = None,
+                   max_retries: int = 5, retry_time: timedelta = timedelta(minutes=3)) -> FacebookPostPhotoResponse:
         """
         Uploads a photo to a specific album, or to the news feed if no album id is specified
         :param retry_time: time to wait if a failure occurs, before the next retry

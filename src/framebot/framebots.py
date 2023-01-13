@@ -200,7 +200,7 @@ class SimpleFrameBot(Framebot):
         self.logger.info(f"Uploading frame {frame.number} of {self.total_frames_number}...")
 
         frame.text = self._get_default_message(frame.number)
-        response = self.facebook_helper.upload_photo(frame.local_file, frame.text)
+        response = self.facebook_helper.post_photo(frame.local_file, frame.text)
 
         frame.photo_id = response.photo_id
         frame.post_id = response.post_id
