@@ -1,0 +1,7 @@
+name: framebot-after-push
+on:
+  push:
+    branches-ignore: [main]
+jobs:
+  test:
+     uses: ./.github/workflows/python-test.yml
