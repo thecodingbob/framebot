@@ -11,16 +11,16 @@ from PIL import Image, ImageOps
 from framebot import utils
 
 from framebot.model import FacebookFrame
-from framebot.plugins import FrameBotPlugin, BestOfReposter, MirroredFramePoster
+from framebot.plugins import BestOfReposter, MirroredFramePoster, FileWritingFrameBotPlugin
 from framebot.social import FacebookHelper
 from test import RESOURCES_DIR
 from test.utils_for_tests import FileWritingTestCase, generate_test_frame
 
 
-class TestFrameBotPlugin(FileWritingTestCase):
+class TestFileWritingFrameBotPlugin(FileWritingTestCase):
 
     def test_init(self):
-        testee = FrameBotPlugin(working_dir=self.test_dir)
+        testee = FileWritingFrameBotPlugin(working_dir=self.test_dir)
         self.assertTrue(testee.working_dir.exists())
 
 
@@ -197,8 +197,7 @@ class TestMirroredFramePoster(FileWritingTestCase):
         super(TestMirroredFramePoster, self).setUp()
         self.album_id = "id"
         self.mock_helper = Mock(spec=FacebookHelper)
-        self.testee = MirroredFramePoster(album_id=self.album_id, facebook_helper=self.mock_helper,
-                                          working_dir=self.test_dir)
+        self.testee = MirroredFramePoster(album_id=self.album_id, facebook_helper=self.mock_helper)
         self.test_frame = generate_test_frame()
 
     def test_default_extra_message(self):

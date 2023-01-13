@@ -9,11 +9,10 @@ import time
 import slugify
 from datetime import timedelta, datetime
 from random import random
-from typing import List, Type, Dict
+from typing import List, Type, Dict, Union, Callable
 
 from PIL import Image, ImageOps
 from pyfacebook import FacebookError
-
 
 from pathlib import Path
 import os
@@ -30,25 +29,18 @@ class FrameBotPlugin(utils.LoggingObject):
     and the single frame posting
     """
 
-    def __init__(self, depends_on: List[Type[FrameBotPlugin]] = None, working_dir: Path = None):
+    def __init__(self, depends_on: List[Type[FrameBotPlugin]] = None):
         """
         Constructor
         :param depends_on: Signals this plugin depends on other plugins, and thus it cannot be used without these,
         and also must act after its dependencies. Behavior for this is yet to be implemented
-        :param working_dir: Local working directory for the plugin
         """
         super().__init__()
-        class_name = type(self).__name__
-        self.logger.info(f"Initializing plugin {class_name}")
+        self.logger.info(f"Initializing plugin {type(self).__name__}")
         if depends_on is None:
             depends_on = []
-        if working_dir is None:
-            working_dir = DEFAULT_WORKING_DIR
         self.depends_on: List[Type[FrameBotPlugin]] = depends_on
-        self.working_dir: Path = working_dir.joinpath("plugins").joinpath(class_name).resolve(strict=False)
         self.dependencies: Dict[FrameBotPlugin] = {}
-
-        os.makedirs(self.working_dir, exist_ok=True)
 
     def before_upload_loop(self) -> None:
         """
@@ -77,7 +69,26 @@ class FrameBotPlugin(utils.LoggingObject):
         self.logger.debug(f"No operation defined for 'after_frame_upload'")
 
 
-class BestOfReposter(FrameBotPlugin):
+class FileWritingFrameBotPlugin(FrameBotPlugin):
+    """
+    A FrameBotPlugin that also needs to perform file writing operations within a working directory.
+    """
+
+    def __init__(self, depends_on: List[Type[FrameBotPlugin]] = None, working_dir: Path = None):
+        """
+        Constructor
+        :param depends_on: Signals this plugin depends on other plugins, and thus it cannot be used without these,
+        and also must act after its dependencies. Behavior for this is yet to be implemented
+        :param working_dir: Local working directory for the plugin
+        """
+        super().__init__(depends_on=depends_on)
+        if working_dir is None:
+            working_dir = DEFAULT_WORKING_DIR
+        self.working_dir: Path = working_dir.joinpath("plugins").joinpath(type(self).__name__).resolve(strict=False)
+        os.makedirs(self.working_dir, exist_ok=True)
+
+
+class BestOfReposter(FileWritingFrameBotPlugin):
     """
     Reposts frames that had a reaction count over a certain threshold, after a defined time threshold from the first
     post.
@@ -163,7 +174,7 @@ class BestOfReposter(FrameBotPlugin):
                           f"{reactions_total}.\n" + \
                           f"Original post: {frame.url}\n\n" + \
                           frame.text
-                self.facebook_helper.upload_photo(frame.local_file, message, self.album_id)
+                self.facebook_helper.post_photo(frame.local_file, message, self.album_id)
                 shutil.copyfile(frame.local_file,
                                 os.path.join(self.album_path,
                                              f"Frame {frame.number} "
@@ -223,7 +234,7 @@ class MirroredFramePoster(FrameBotPlugin):
 
     def __init__(self, facebook_helper: FacebookHelper, album_id: str, ratio: float = 0.5,
                  bot_name: str = "MirrorBot", mirror_original_message: bool = True,
-                 extra_message: str = None, working_dir: Path = None):
+                 extra_message: str = None):
         """
         Constructor
         :param facebook_helper: Helper to gather data and post it to Facebook
@@ -233,7 +244,7 @@ class MirroredFramePoster(FrameBotPlugin):
         :param mirror_original_message: Also mirrors the original text message along with the image
         :param extra_message: Message to attach to the frame. Default adds the bot's name as a sort of signature
         """
-        super().__init__(working_dir=working_dir)
+        super().__init__()
         self.facebook_helper: FacebookHelper = facebook_helper
         self.album_id: str = album_id
         self.ratio: float = ratio
@@ -277,4 +288,5 @@ class MirroredFramePoster(FrameBotPlugin):
             self.logger.info("Posting mirrored frame...")
             mirrored_frame = self._mirror_frame(frame)
             frame_text = self._generate_message(frame)
-            self.facebook_helper.upload_photo(mirrored_frame, frame_text, self.album_id)
+            self.facebook_helper.post_photo(mirrored_frame, frame_text, self.album_id)
+
