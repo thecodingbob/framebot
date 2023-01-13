@@ -11,7 +11,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v3
       - name: filter
-      - uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v2
         id: filter
         with:
           filters: |
