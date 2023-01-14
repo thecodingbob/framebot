@@ -41,6 +41,7 @@ class FacebookHelper(LoggingObject):
     Helper to interact with the Facebook Graph API
     """
     DEFAULT_RETRY_MINUTES = timedelta(minutes=1)
+    DEFAULT_MAX_RETRIES = 5
 
     def __init__(self, access_token: str, page_id: str):
         """
@@ -56,7 +57,8 @@ class FacebookHelper(LoggingObject):
         self.logger.info(f"Initialized GraphAPI for Facebook. Page id is {self.page_id}.")
 
     def post_photo(self, image: Union[Path, str, Image], message: str, album_id: str = None,
-                   max_retries: int = 5, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> FacebookPostPhotoResponse:
+                   max_retries: int = DEFAULT_MAX_RETRIES, retry_time: timedelta = DEFAULT_RETRY_MINUTES) \
+            -> FacebookPostPhotoResponse:
         """
         Uploads a photo to a specific album, or to the news feed if no album id is specified
         :param retry_time: time to wait if a failure occurs, before the next retry
@@ -74,36 +76,39 @@ class FacebookHelper(LoggingObject):
                                              retry_time=retry_time)
         return FacebookPostPhotoResponse.from_response_dict(response)
 
-    def post_comment(self, object_id: str, image: Union[Path, str, Image] = None, message: str = None,
-                     max_retries: int = 5, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> str:
+    def post_comment(self, post_id: str, image: Union[Path, str, Image] = None, message: str = None,
+                     max_retries: int = DEFAULT_MAX_RETRIES, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> str:
         """
         Uploads a comment to a specific post. At least one between image and message must not be None.
         :param retry_time: time to wait if a failure occurs, before the next retry
         :param max_retries: max number of retries before giving up
         :param image: The image to be posted. Could be a path to an image file or a PIL Image, or None
         :param message: The comment message, if any
-        :param object_id: The post where to append the comment
+        :param post_id: The post where to append the comment
         :return the comment id
         """
         if image is None and message is None:
             raise ValueError("At least one between image and message must not be None.")
         if image is not None:
             with open_image_stream(image) as im:
-                response = self._post_with_retry(object_id=object_id, connection="comments", files={"source": im},
+                response = self._post_with_retry(object_id=post_id, connection="comments", files={"source": im},
                                                  data={"message": message}, max_retries=max_retries,
                                                  retry_time=retry_time)
         else:
-            response = self._post_with_retry(object_id=object_id, connection="comments", data={"message": message},
+            response = self._post_with_retry(object_id=post_id, connection="comments", data={"message": message},
                                              max_retries=max_retries, retry_time=retry_time)
         return response['id']
 
     def _post_with_retry(self, object_id: str, connection: str, files: Dict = None, data: Dict = None,
-                         max_retries: int = 5, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> Dict:
+                         max_retries: int = DEFAULT_MAX_RETRIES, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> Dict:
         retry_count = 0
         while True:
             try:
                 return self.graph.post_object(object_id=object_id, connection=connection, files=files, data=data)
             except FacebookError as e:
+                if e.code == 190:
+                    self.logger.error("Expired access token. Cannot post")
+                    raise e
                 self.logger.warning("Exception occurred during photo upload.", exc_info=True)
                 if retry_count < max_retries:
                     retry_secs = retry_time.total_seconds() if "spam" not in str(e) else retry_time.total_seconds() * 10
@@ -140,14 +145,14 @@ class FacebookHelper(LoggingObject):
 
 
 @contextmanager
-def open_image_stream(image: Union[Path, str, Image]):
+def open_image_stream(image: Union[Path, str, Image]) -> Union[bytes, BytesIO]:
     if issubclass(type(image), (str, Path)):
         im_stream = open(image, "rb")
         output = im_stream
     else:
         im_stream = BytesIO()
         image.save(im_stream, "jpeg")
-        output = im_stream.getvalue()
+        output = im_stream
     try:
         yield output
     finally:
