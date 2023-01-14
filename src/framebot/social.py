@@ -2,10 +2,11 @@
 Contains helper methods and classes for social media upload and data gathering
 """
 import time
+from contextlib import contextmanager
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
-from typing import Union
+from typing import Union, Dict
 
 from pyfacebook import GraphAPI, FacebookError
 from PIL.Image import Image
@@ -39,6 +40,7 @@ class FacebookHelper(LoggingObject):
     """
     Helper to interact with the Facebook Graph API
     """
+    DEFAULT_RETRY_MINUTES = timedelta(minutes=1)
 
     def __init__(self, access_token: str, page_id: str):
         """
@@ -54,7 +56,7 @@ class FacebookHelper(LoggingObject):
         self.logger.info(f"Initialized GraphAPI for Facebook. Page id is {self.page_id}.")
 
     def post_photo(self, image: Union[Path, str, Image], message: str, album_id: str = None,
-                   max_retries: int = 5, retry_time: timedelta = timedelta(minutes=3)) -> FacebookPostPhotoResponse:
+                   max_retries: int = 5, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> FacebookPostPhotoResponse:
         """
         Uploads a photo to a specific album, or to the news feed if no album id is specified
         :param retry_time: time to wait if a failure occurs, before the next retry
@@ -66,22 +68,39 @@ class FacebookHelper(LoggingObject):
         """
         if album_id is None:
             album_id = self.page_id
-        uploaded = False
+        with open_image_stream(image) as im:
+            response = self._post_with_retry(object_id=album_id, connection="photos", files={"source": im},
+                                             data={"message": message}, max_retries=max_retries,
+                                             retry_time=retry_time)
+        return FacebookPostPhotoResponse.from_response_dict(response)
+
+    def post_comment(self, object_id: str, image: Union[Path, str, Image] = None, message: str = None,
+                     max_retries: int = 5, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> None:
+        """
+        Uploads a comment to a specific post. At least one between image and message must not be None.
+        :param retry_time: time to wait if a failure occurs, before the next retry
+        :param max_retries: max number of retries before giving up
+        :param image: The image to be posted. Could be a path to an image file or a PIL Image
+        :param message: The message used as image description
+        :param object_id: The album where to post the image
+        :return the response object containing photo id and post id
+        """
+        if image is None and message is None:
+            raise ValueError("At least one between image and message must not be None.")
+        if image is not None:
+            with open_image_stream(image) as im:
+                self._post_with_retry(object_id=object_id, connection="comments", files={"source": im},
+                                      data={"message": message}, max_retries=max_retries, retry_time=retry_time)
+        else:
+            self._post_with_retry(object_id=object_id, connection="comments", data={"message": message},
+                                  max_retries=max_retries, retry_time=retry_time)
+
+    def _post_with_retry(self, object_id: str, connection: str, files: Dict = None, data: Dict = None,
+                         max_retries: int = 5, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> Dict:
         retry_count = 0
-        while not uploaded:
+        while True:
             try:
-                if issubclass(type(image), (str, Path)):
-                    with open(image, "rb") as im:
-                        response = self.graph.post_object(object_id=album_id, connection="photos",
-                                                          files={"source": im}, data={"message": message})
-                else:
-                    with BytesIO() as im_stream:
-                        image.save(im_stream, "jpeg")
-                        response = self.graph.post_object(object_id=album_id, connection="photos",
-                                                          files={"source": im_stream.getvalue()},
-                                                          data={"message": message})
-                uploaded = True
-                return FacebookPostPhotoResponse.from_response_dict(response)
+                return self.graph.post_object(object_id=object_id, connection=connection, files=files, data=data)
             except FacebookError as e:
                 self.logger.warning("Exception occurred during photo upload.", exc_info=True)
                 if retry_count < max_retries:
@@ -116,3 +135,18 @@ class FacebookHelper(LoggingObject):
         :return: the story id
         """
         return self.graph.get_object(object_id=object_id, fields="page_story_id")["page_story_id"]
+
+
+@contextmanager
+def open_image_stream(image: Union[Path, str, Image]):
+    if issubclass(type(image), (str, Path)):
+        im_stream = open(image, "rb")
+        output = im_stream
+    else:
+        im_stream = BytesIO()
+        image.save(im_stream, "jpeg")
+        output = im_stream.getvalue()
+    try:
+        yield output
+    finally:
+        im_stream.close()
