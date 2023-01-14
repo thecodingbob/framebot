@@ -75,25 +75,27 @@ class FacebookHelper(LoggingObject):
         return FacebookPostPhotoResponse.from_response_dict(response)
 
     def post_comment(self, object_id: str, image: Union[Path, str, Image] = None, message: str = None,
-                     max_retries: int = 5, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> None:
+                     max_retries: int = 5, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> str:
         """
         Uploads a comment to a specific post. At least one between image and message must not be None.
         :param retry_time: time to wait if a failure occurs, before the next retry
         :param max_retries: max number of retries before giving up
-        :param image: The image to be posted. Could be a path to an image file or a PIL Image
-        :param message: The message used as image description
-        :param object_id: The album where to post the image
-        :return the response object containing photo id and post id
+        :param image: The image to be posted. Could be a path to an image file or a PIL Image, or None
+        :param message: The comment message, if any
+        :param object_id: The post where to append the comment
+        :return the comment id
         """
         if image is None and message is None:
             raise ValueError("At least one between image and message must not be None.")
         if image is not None:
             with open_image_stream(image) as im:
-                self._post_with_retry(object_id=object_id, connection="comments", files={"source": im},
-                                      data={"message": message}, max_retries=max_retries, retry_time=retry_time)
+                response = self._post_with_retry(object_id=object_id, connection="comments", files={"source": im},
+                                                 data={"message": message}, max_retries=max_retries,
+                                                 retry_time=retry_time)
         else:
-            self._post_with_retry(object_id=object_id, connection="comments", data={"message": message},
-                                  max_retries=max_retries, retry_time=retry_time)
+            response = self._post_with_retry(object_id=object_id, connection="comments", data={"message": message},
+                                             max_retries=max_retries, retry_time=retry_time)
+        return response['id']
 
     def _post_with_retry(self, object_id: str, connection: str, files: Dict = None, data: Dict = None,
                          max_retries: int = 5, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> Dict:
