@@ -76,7 +76,7 @@ class FacebookHelper(LoggingObject):
                                              retry_time=retry_time)
         return FacebookPostPhotoResponse.from_response_dict(response)
 
-    def post_comment(self, post_id: str, image: Union[Path, str, Image] = None, message: str = None,
+    def post_comment(self, object_id: str, image: Union[Path, str, Image] = None, message: str = None,
                      max_retries: int = DEFAULT_MAX_RETRIES, retry_time: timedelta = DEFAULT_RETRY_MINUTES) -> str:
         """
         Uploads a comment to a specific post. At least one between image and message must not be None.
@@ -84,18 +84,18 @@ class FacebookHelper(LoggingObject):
         :param max_retries: max number of retries before giving up
         :param image: The image to be posted. Could be a path to an image file or a PIL Image, or None
         :param message: The comment message, if any
-        :param post_id: The post where to append the comment
+        :param object_id: The post where to append the comment
         :return the comment id
         """
         if image is None and message is None:
             raise ValueError("At least one between image and message must not be None.")
         if image is not None:
             with open_image_stream(image) as im:
-                response = self._post_with_retry(object_id=post_id, connection="comments", files={"source": im},
+                response = self._post_with_retry(object_id=object_id, connection="comments", files={"source": im},
                                                  data={"message": message}, max_retries=max_retries,
                                                  retry_time=retry_time)
         else:
-            response = self._post_with_retry(object_id=post_id, connection="comments", data={"message": message},
+            response = self._post_with_retry(object_id=object_id, connection="comments", data={"message": message},
                                              max_retries=max_retries, retry_time=retry_time)
         return response['id']
 

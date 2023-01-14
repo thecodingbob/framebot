@@ -145,17 +145,17 @@ class TestFacebookHelper(TestCase):
         mock_method.return_value = {"id": expected_comment_id}
 
         # only image
-        comment_id = self.testee.post_comment(post_id=post_id, image=DUMMY_IMAGE)
+        comment_id = self.testee.post_comment(object_id=post_id, image=DUMMY_IMAGE)
         self.assertEqual(expected_comment_id, comment_id)
         mock_method.assert_called_once()
 
         # only message
-        comment_id = self.testee.post_comment(post_id=post_id, image=DUMMY_IMAGE)
+        comment_id = self.testee.post_comment(object_id=post_id, image=DUMMY_IMAGE)
         self.assertEqual(expected_comment_id, comment_id)
         self.assertEqual(2, mock_method.call_count)
 
         # both image and message
-        comment_id = self.testee.post_comment(post_id=post_id, image=DUMMY_IMAGE)
+        comment_id = self.testee.post_comment(object_id=post_id, image=DUMMY_IMAGE)
         self.assertEqual(expected_comment_id, comment_id)
         self.assertEqual(3, mock_method.call_count)
 
