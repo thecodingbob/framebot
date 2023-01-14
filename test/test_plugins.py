@@ -4,6 +4,9 @@ import shutil
 import unittest
 import os
 from datetime import timedelta, datetime
+from pathlib import Path
+from typing import Callable
+from unittest import TestCase
 from unittest.mock import Mock, patch, DEFAULT
 from pyfacebook import FacebookError
 
@@ -11,7 +14,7 @@ from PIL import Image, ImageOps
 from framebot import utils
 
 from framebot.model import FacebookFrame
-from framebot.plugins import BestOfReposter, MirroredFramePoster, FileWritingFrameBotPlugin
+from framebot.plugins import BestOfReposter, MirroredFramePoster, FileWritingFrameBotPlugin, AlternateFrameCommentPoster
 from framebot.social import FacebookHelper
 from test import RESOURCES_DIR
 from test.utils_for_tests import FileWritingTestCase, generate_test_frame
@@ -191,7 +194,7 @@ class TestBestOfReposter(FileWritingTestCase):
         self.assertEqual(1, mock_sleep.call_count)
 
 
-class TestMirroredFramePoster(FileWritingTestCase):
+class TestMirroredFramePoster(TestCase):
 
     def setUp(self) -> None:
         super(TestMirroredFramePoster, self).setUp()
@@ -255,6 +258,25 @@ class TestMirroredFramePoster(FileWritingTestCase):
         self.testee.after_frame_upload(self.test_frame)
         mock_mirror_frame.assert_called_once_with(self.test_frame)
         mock_generate_message.assert_called_once_with(self.test_frame)
+
+
+class TestAlternateFrameCommentPoster(TestCase):
+
+    def setUp(self) -> None:
+        self.mock_helper = Mock(spec=FacebookHelper)
+        self.alternate_directory = Mock(spec=Path)
+        self.test_frame = generate_test_frame()
+
+    def test_init(self):
+        generator_output = "static"
+        testee = AlternateFrameCommentPoster(alternate_frames_directory=self.alternate_directory,
+                                             facebook_helper=self.mock_helper, message_generator=generator_output)
+        self.assertTrue(callable(testee.message_generator))
+        self.assertEqual(generator_output, testee.message_generator(None))
+
+    def test_after_frame_upload(self):
+        testee = AlternateFrameCommentPoster(alternate_frames_directory=self.alternate_directory,
+                                             facebook_helper=self.mock_helper)
 
 
 if __name__ == '__main__':
