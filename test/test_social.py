@@ -150,14 +150,27 @@ class TestFacebookHelper(TestCase):
         mock_method.assert_called_once()
 
         # only message
-        comment_id = self.testee.post_comment(object_id=post_id, image=DUMMY_IMAGE)
+        comment_id = self.testee.post_comment(object_id=post_id, message="message")
         self.assertEqual(expected_comment_id, comment_id)
         self.assertEqual(2, mock_method.call_count)
 
         # both image and message
-        comment_id = self.testee.post_comment(object_id=post_id, image=DUMMY_IMAGE)
+        comment_id = self.testee.post_comment(object_id=post_id, image=DUMMY_IMAGE, message="message")
         self.assertEqual(expected_comment_id, comment_id)
         self.assertEqual(3, mock_method.call_count)
+
+        # check empty string conversion
+        comment_id = self.testee.post_comment(object_id=post_id, image=DUMMY_IMAGE, message="")
+        self.assertEqual(expected_comment_id, comment_id)
+        self.assertEqual(4, mock_method.call_count)
+        call_args = mock_method.call_args
+        if type(call_args.kwargs) == dict:
+            call_args = call_args.kwargs
+        else:
+            # python 3.7
+            call_args = call_args[1]
+        self.assertEqual({"message": None}, call_args["data"])
+
 
 
 class TestStaticMethods(TestCase):

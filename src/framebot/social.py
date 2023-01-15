@@ -87,6 +87,9 @@ class FacebookHelper(LoggingObject):
         :param object_id: The post where to append the comment
         :return the comment id
         """
+        if message == "":
+            # empty string causes an exception with the fb api
+            message = None
         if image is None and message is None:
             raise ValueError("At least one between image and message must not be None.")
         if image is not None:
