@@ -291,15 +291,10 @@ class MirroredFramePoster(FrameBotPlugin):
             self.facebook_helper.post_photo(mirrored_frame, frame_text, self.album_id)
 
 
-def alternate_frame_poster_generator_same_text(frame: FacebookFrame) -> str:
-    return frame.text
-
-
 class AlternateFrameCommentPoster(FrameBotPlugin):
 
     def __init__(self, facebook_helper: FacebookHelper, alternate_frames_directory: Path, delete_files: bool = False,
-                 message_generator: Union[str, Callable[[FacebookFrame], Union[str, None]]] =
-                 alternate_frame_poster_generator_same_text):
+                 message_generator: Union[str, Callable[[FacebookFrame], Union[str, None]]] = lambda frame: frame.text):
         super().__init__()
         if not alternate_frames_directory.exists():
             raise ValueError(f"Can't initialize AlternateFrameCommentPoster plugin. Provided path for alternate frames"
@@ -309,9 +304,13 @@ class AlternateFrameCommentPoster(FrameBotPlugin):
         self.delete_files = delete_files
         self.message_generator = (lambda frame: message_generator) if type(message_generator) is str else \
             message_generator
+        self.logger.info(f"Alternate frame posting is enabled. Will post alternate frames as post comments from the"
+                         f" directory {self.frames_directory}. Alternate frames will"
+                         f" {'' if self.delete_files else 'not'} be deleted.")
 
     def after_frame_upload(self, frame: FacebookFrame) -> None:
         alternate_frame_path = self.frames_directory.joinpath(frame.local_file.name)
+        self.logger.info(f"Posting alternate frame from location {alternate_frame_path}...")
         if not alternate_frame_path.exists():
             raise FileNotFoundError(f"Alternate frame not found in path {alternate_frame_path}. Please check your"
                                     f" configuration and/or directories.")
