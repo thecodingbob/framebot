@@ -19,30 +19,32 @@ logger = get_logger("main")
 
 def _init_best_of_reposter(config: configparser.ConfigParser, facebook_helper: FacebookHelper,
                            movie_title: str, working_dir: Path, plugins: List[FrameBotPlugin]) -> None:
-    bof_uploader_settings = config["best_of_album_uploader"]
-    best_of_reposting_enabled = bof_uploader_settings.getboolean("enabled")
-    if best_of_reposting_enabled:
-        reactions_threshold = bof_uploader_settings.getint("reactions_threshold")
-        wait_hours = bof_uploader_settings.getint("wait_hours")
-        best_of_album_id = bof_uploader_settings.get("best_of_album_id")
-        plugins.append(BestOfReposter(
-            album_id=best_of_album_id, facebook_helper=facebook_helper, video_title=movie_title,
-            reactions_threshold=reactions_threshold, time_threshold=timedelta(hours=wait_hours),
-            working_dir=working_dir)
-        )
+    if config.has_section("best_of_album_uploader"):
+        bof_uploader_settings = config["best_of_album_uploader"]
+        best_of_reposting_enabled = bof_uploader_settings.getboolean("enabled")
+        if best_of_reposting_enabled:
+            reactions_threshold = bof_uploader_settings.getint("reactions_threshold")
+            wait_hours = bof_uploader_settings.getint("wait_hours")
+            best_of_album_id = bof_uploader_settings.get("best_of_album_id")
+            plugins.append(BestOfReposter(
+                album_id=best_of_album_id, facebook_helper=facebook_helper, video_title=movie_title,
+                reactions_threshold=reactions_threshold, time_threshold=timedelta(hours=wait_hours),
+                working_dir=working_dir)
+            )
 
 
 def _init_mirrored_frame_poster(config: configparser.ConfigParser, facebook_helper: FacebookHelper,
                                 bot_name: str, plugins: List[FrameBotPlugin]) -> None:
-    mirroring_settings = config["mirroring"]
-    mirroring_enabled = mirroring_settings.getboolean("enabled")
-    if mirroring_enabled:
-        mirroring_ratio = mirroring_settings.getfloat("ratio")
-        mirror_album_id = mirroring_settings["mirror_album_id"]
-        plugins.append(
-            MirroredFramePoster(album_id=mirror_album_id, facebook_helper=facebook_helper,
-                                bot_name=bot_name, ratio=mirroring_ratio)
-        )
+    if config.has_section("mirroring"):
+        mirroring_settings = config["mirroring"]
+        mirroring_enabled = mirroring_settings.getboolean("enabled")
+        if mirroring_enabled:
+            mirroring_ratio = mirroring_settings.getfloat("ratio")
+            mirror_album_id = mirroring_settings["mirror_album_id"]
+            plugins.append(
+                MirroredFramePoster(album_id=mirror_album_id, facebook_helper=facebook_helper,
+                                    bot_name=bot_name, ratio=mirroring_ratio)
+            )
 
 
 def _init_config_parser(config_directory: Path) -> configparser.ConfigParser:
@@ -89,18 +91,19 @@ def _init_facebook_helper(config: configparser.ConfigParser) -> FacebookHelper:
 
 def _init_alternate_frame_poster(config: configparser.ConfigParser, facebook_helper: FacebookHelper,
                                  delete_files: bool, working_dir: Path, plugins: List[FrameBotPlugin], ) -> None:
-    alternate_frame_poster_settings = config["alternate_frame_poster"]
-    alternate_enabled = alternate_frame_poster_settings.getboolean("enabled")
-    if alternate_enabled:
-        alternate_directory = Path(alternate_frame_poster_settings.get("alternate_frames_directory"))
-        if not alternate_directory.is_absolute():
-            alternate_directory = working_dir.joinpath(alternate_directory).resolve()
-        comment_text = alternate_frame_poster_settings.get("comment_text")
-        plugins.append(
-            AlternateFrameCommentPoster(alternate_frames_directory=alternate_directory,
-                                        facebook_helper=facebook_helper, delete_files=delete_files,
-                                        message_generator=comment_text)
-        )
+    if config.has_section("alternate_frame_poster"):
+        alternate_frame_poster_settings = config["alternate_frame_poster"]
+        alternate_enabled = alternate_frame_poster_settings.getboolean("enabled")
+        if alternate_enabled:
+            alternate_directory = Path(alternate_frame_poster_settings.get("alternate_frames_directory"))
+            if not alternate_directory.is_absolute():
+                alternate_directory = working_dir.joinpath(alternate_directory).resolve()
+            comment_text = alternate_frame_poster_settings.get("comment_text")
+            plugins.append(
+                AlternateFrameCommentPoster(alternate_frames_directory=alternate_directory,
+                                            facebook_helper=facebook_helper, delete_files=delete_files,
+                                            message_generator=comment_text)
+            )
 
 
 def main():
