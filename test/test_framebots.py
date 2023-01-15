@@ -184,7 +184,7 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.assertIsNotNone(test_frame.photo_id)
         self.assertIsNotNone(test_frame.url)
         self.assertEqual(test_frame.number, self.testee.last_frame_uploaded)
-        self.mock_helper.upload_photo.assert_called_once_with(test_frame.local_file, test_frame.text)
+        self.mock_helper.post_photo.assert_called_once_with(test_frame.local_file, test_frame.text)
 
 
 if __name__ == '__main__':

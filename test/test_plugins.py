@@ -4,6 +4,9 @@ import shutil
 import unittest
 import os
 from datetime import timedelta, datetime
+from pathlib import Path
+from typing import Callable
+from unittest import TestCase
 from unittest.mock import Mock, patch, DEFAULT
 from pyfacebook import FacebookError
 
@@ -11,16 +14,16 @@ from PIL import Image, ImageOps
 from framebot import utils
 
 from framebot.model import FacebookFrame
-from framebot.plugins import FrameBotPlugin, BestOfReposter, MirroredFramePoster
+from framebot.plugins import BestOfReposter, MirroredFramePoster, FileWritingFrameBotPlugin, AlternateFrameCommentPoster
 from framebot.social import FacebookHelper
 from test import RESOURCES_DIR
 from test.utils_for_tests import FileWritingTestCase, generate_test_frame
 
 
-class TestFrameBotPlugin(FileWritingTestCase):
+class TestFileWritingFrameBotPlugin(FileWritingTestCase):
 
     def test_init(self):
-        testee = FrameBotPlugin(working_dir=self.test_dir)
+        testee = FileWritingFrameBotPlugin(working_dir=self.test_dir)
         self.assertTrue(testee.working_dir.exists())
 
 
@@ -84,7 +87,7 @@ class TestBestOfReposter(FileWritingTestCase):
 
             self.assertTrue(self.testee._check_and_post(self.test_frame))
             mock_remove.assert_called_once_with(self.test_frame.local_file)
-            self.assertFalse(self.facebook_helper.upload_photo.called)
+            self.assertFalse(self.facebook_helper.post_photo.called)
             self.assertFalse(mock_copyfile.called)
             mock_exists.assert_called_once_with(self.test_frame.local_file)
 
@@ -95,7 +98,7 @@ class TestBestOfReposter(FileWritingTestCase):
 
             self.assertTrue(self.testee._check_and_post(self.test_frame))
             mock_remove.assert_called_once_with(self.test_frame.local_file)
-            self.assertTrue(self.facebook_helper.upload_photo.called)
+            self.assertTrue(self.facebook_helper.post_photo.called)
             mock_copyfile.assert_called_once_with(self.test_frame.local_file,
                                                   os.path.join(self.testee.album_path,
                                                                f"Frame {self.test_frame.number} "
@@ -191,14 +194,13 @@ class TestBestOfReposter(FileWritingTestCase):
         self.assertEqual(1, mock_sleep.call_count)
 
 
-class TestMirroredFramePoster(FileWritingTestCase):
+class TestMirroredFramePoster(TestCase):
 
     def setUp(self) -> None:
         super(TestMirroredFramePoster, self).setUp()
         self.album_id = "id"
         self.mock_helper = Mock(spec=FacebookHelper)
-        self.testee = MirroredFramePoster(album_id=self.album_id, facebook_helper=self.mock_helper,
-                                          working_dir=self.test_dir)
+        self.testee = MirroredFramePoster(album_id=self.album_id, facebook_helper=self.mock_helper)
         self.test_frame = generate_test_frame()
 
     def test_default_extra_message(self):
@@ -256,6 +258,54 @@ class TestMirroredFramePoster(FileWritingTestCase):
         self.testee.after_frame_upload(self.test_frame)
         mock_mirror_frame.assert_called_once_with(self.test_frame)
         mock_generate_message.assert_called_once_with(self.test_frame)
+
+
+class TestAlternateFrameCommentPoster(TestCase):
+
+    def setUp(self) -> None:
+        self.mock_helper = Mock(spec=FacebookHelper)
+        self.alternate_directory: Mock = Mock(spec=Path)
+        self.test_frame = generate_test_frame()
+
+    def test_init(self):
+        # test that generator generates singleton from static string
+        generator_output = "static"
+        testee = AlternateFrameCommentPoster(alternate_frames_directory=self.alternate_directory,
+                                             facebook_helper=self.mock_helper, message_generator=generator_output)
+        self.assertTrue(callable(testee.message_generator))
+        self.assertEqual(generator_output, testee.message_generator(None))
+
+        # test default
+        generator_output = "static"
+        testee = AlternateFrameCommentPoster(alternate_frames_directory=self.alternate_directory,
+                                             facebook_helper=self.mock_helper)
+        self.assertEqual(self.test_frame.text, testee.message_generator(self.test_frame))
+
+    def test_after_frame_upload(self):
+        testee = AlternateFrameCommentPoster(alternate_frames_directory=self.alternate_directory,
+                                             facebook_helper=self.mock_helper)
+        mock_alternate_path: Mock = Mock(spec=Path)
+        self.alternate_directory.joinpath.return_value = mock_alternate_path
+
+        # file not found
+        mock_alternate_path.exists.return_value = False
+
+        self.assertRaises(FileNotFoundError, testee.after_frame_upload, self.test_frame)
+
+        # normal workflow, no delete
+        mock_alternate_path.exists.return_value = True
+        testee.delete_files = False
+        testee.after_frame_upload(self.test_frame)
+        self.mock_helper.post_comment.assert_called_once_with(
+            object_id=self.test_frame.photo_id, message=testee.message_generator(self.test_frame),
+            image=mock_alternate_path)
+        mock_alternate_path.unlink.assert_not_called()
+
+        # normal workflow, delete
+        testee.delete_files = True
+        testee.after_frame_upload(self.test_frame)
+        self.assertEqual(2, self.mock_helper.post_comment.call_count)
+        mock_alternate_path.unlink.assert_called_once()
 
 
 if __name__ == '__main__':
