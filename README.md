@@ -42,6 +42,10 @@ You can change the bot's behavior editing the options in the `config.ini` file, 
   - *enabled* - Set this to `True` if you want your bot to randomly mirror an image at the horizontal center and repost it.
   - *mirror_album_id* - Same as *best_of_album_id*, but for mirrored photos. If you just want those pics to be uploaded in your page's timeline, set this to the same value as *page_id*.
   - *ratio* - Every frame will have a ratio% chance of being mirrored.
+- **alternate_frame_poster**
+  - *enabled* - Set this to `True` if you want your bot to post an alternate version of the same frame in the post's comments. This is useful, for example, if you want to also post the raw frame (i.e. the frame without subtitle)
+  - *alternate_frames_directory* - Directory where to pick the alternate frames from. Be sure to use the same naming structure for the alternate frames.
+  - *comment_text* - Message you want the bot to append to the comment. Set it to blank if you don't want your bot to add a text message to the alternate frame.
 ## Migration from an older version
 If you updated the framebot and plan to run it on an existing configuration, you need first to execute the migration 
 script. This is only necessary if your framebot didn't finish to upload all the frames from a previous video. If you 
