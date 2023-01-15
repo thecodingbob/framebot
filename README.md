@@ -19,7 +19,7 @@ pip install --upgrade pyframebot
 - Generate a Facebook app here: https://developers.facebook.com/apps
 - Configure it to be able to post on behalf of your page (a more in depth guide may come in the future)
 - Generate an access token for your page here: https://developers.facebook.com/tools/explorer/
-- Copy the `config.ini` file (https://github.com/thecodingbob/framebot/blob/main/config.ini) from this repo in the folder where you want to store your framebot configuration and data
+- Copy the `config.ini` file (https://github.com/thecodingbob/framebot/blob/main/src/framebot/resources/config.ini) from this repo in the folder where you want to store your framebot configuration and data
 - Paste the generated access token and the page id in the `config.ini` file 
 - Configure the other options in the `config.ini` file as you like
 - Put the frames you want to post in the `frames/` directory in the same parent directory where you put the configuration file (or change the folder name in the `config.ini` file and put the frames in the folder with that name)
