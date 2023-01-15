@@ -2,6 +2,7 @@ import argparse
 import configparser
 import os
 import platform
+import shutil
 import sys
 from datetime import timedelta
 from os.path import dirname
@@ -48,9 +49,22 @@ def _init_config_parser(config_directory: str) -> configparser.ConfigParser:
     config_path = config_directory.joinpath("config.ini")
 
     if not config_path.exists():
-        logger.error(f"No 'config.ini' file found in the provided directory: {config_directory}."
-                     f" Unable to start the bot.")
-        exit()
+        logger.warning(f"No 'config.ini' file found in the provided directory: {config_directory}.")
+        logger.info("Would you like to generate a config.ini file in the provided location? (yes/no)")
+        user_input = input()
+
+        yes_choices = ['yes', 'y']
+        no_choices = ['no', 'n']
+
+        if user_input.lower() in yes_choices:
+            logger.info(f"Generating config.ini file in {config_directory}...")
+            shutil.copy("config.ini", config_directory)
+            logger.info("config.ini file generated. Please edit the configuration values according to your preferences"
+                        " and then press ENTER.")
+        else:
+            logger.warning("The bot needs a configuration file in order to initialize. Please create or generate one in"
+                           " your directory of choice.")
+            exit()
 
     config = configparser.ConfigParser()
     config.read(config_path, encoding='utf-8')
@@ -108,7 +122,7 @@ def main():
 
     _configure_window(movie_title)
 
-    working_dir = Path(dirname(config_directory))
+    working_dir = Path(config_directory)
     if not frames_directory.is_absolute():
         frames_directory = working_dir.joinpath(frames_directory).resolve()
     facebook_helper = _init_facebook_helper(config)
