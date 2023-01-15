@@ -48,6 +48,7 @@ class FacebookHelper(LoggingObject):
         Constructor
         :param access_token: Access token for the Facebook page
         :param page_id: Id of the Facebook page
+        :param timeout: timeout for the http requests
         """
         super().__init__()
         self.access_token: str = access_token
