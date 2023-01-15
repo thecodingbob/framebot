@@ -32,7 +32,7 @@ def _init_best_of_reposter(config: configparser.ConfigParser, facebook_helper: F
 
 
 def _init_mirrored_frame_poster(config: configparser.ConfigParser, facebook_helper: FacebookHelper,
-                                working_dir: Path, bot_name: str, plugins: List[FrameBotPlugin]) -> None:
+                                bot_name: str, plugins: List[FrameBotPlugin]) -> None:
     mirroring_settings = config["mirroring"]
     mirroring_enabled = mirroring_settings.getboolean("enabled")
     if mirroring_enabled:
