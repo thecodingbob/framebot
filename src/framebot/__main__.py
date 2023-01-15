@@ -116,7 +116,7 @@ def main():
     plugins = []
 
     _init_best_of_reposter(config, facebook_helper, movie_title, working_dir, plugins)
-    _init_mirrored_frame_poster(config, facebook_helper, working_dir, bot_name, plugins)
+    _init_mirrored_frame_poster(config, facebook_helper, bot_name, plugins)
     _init_alternate_frame_poster(config, facebook_helper, delete_files, working_dir, plugins)
 
     bot = SimpleFrameBot(facebook_helper=facebook_helper, video_title=movie_title,
