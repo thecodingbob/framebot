@@ -310,7 +310,7 @@ class AlternateFrameCommentPoster(FrameBotPlugin):
         self.helper = facebook_helper
         self.frames_directory = alternate_frames_directory
         self.delete_files = delete_files
-        self.message_generator = lambda frame: message_generator if type(message_generator) is str else \
+        self.message_generator = (lambda frame: message_generator) if type(message_generator) is str else \
             message_generator
 
     def after_frame_upload(self, frame: FacebookFrame) -> None:

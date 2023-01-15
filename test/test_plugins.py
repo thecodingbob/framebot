@@ -264,19 +264,48 @@ class TestAlternateFrameCommentPoster(TestCase):
 
     def setUp(self) -> None:
         self.mock_helper = Mock(spec=FacebookHelper)
-        self.alternate_directory = Mock(spec=Path)
+        self.alternate_directory: Mock = Mock(spec=Path)
         self.test_frame = generate_test_frame()
 
     def test_init(self):
+        # test that generator generates singleton from static string
         generator_output = "static"
         testee = AlternateFrameCommentPoster(alternate_frames_directory=self.alternate_directory,
                                              facebook_helper=self.mock_helper, message_generator=generator_output)
         self.assertTrue(callable(testee.message_generator))
         self.assertEqual(generator_output, testee.message_generator(None))
 
+        # test default
+        generator_output = "static"
+        testee = AlternateFrameCommentPoster(alternate_frames_directory=self.alternate_directory,
+                                             facebook_helper=self.mock_helper)
+        self.assertEqual(self.test_frame.text, testee.message_generator(self.test_frame))
+
     def test_after_frame_upload(self):
         testee = AlternateFrameCommentPoster(alternate_frames_directory=self.alternate_directory,
                                              facebook_helper=self.mock_helper)
+        mock_alternate_path: Mock = Mock(spec=Path)
+        self.alternate_directory.joinpath.return_value = mock_alternate_path
+
+        # file not found
+        mock_alternate_path.exists.return_value = False
+
+        self.assertRaises(FileNotFoundError, testee.after_frame_upload, self.test_frame)
+
+        # normal workflow, no delete
+        mock_alternate_path.exists.return_value = True
+        testee.delete_files = False
+        testee.after_frame_upload(self.test_frame)
+        self.mock_helper.post_comment.assert_called_once_with(
+            object_id=self.test_frame.photo_id, message=testee.message_generator(self.test_frame),
+            image=mock_alternate_path)
+        mock_alternate_path.unlink.assert_not_called()
+
+        # normal workflow, delete
+        testee.delete_files = True
+        testee.after_frame_upload(self.test_frame)
+        self.assertEqual(2, self.mock_helper.post_comment.call_count)
+        mock_alternate_path.unlink.assert_called_once()
 
 
 if __name__ == '__main__':
