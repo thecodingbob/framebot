@@ -291,18 +291,15 @@ class MirroredFramePoster(FrameBotPlugin):
             self.facebook_helper.post_photo(mirrored_frame, frame_text, self.album_id)
 
 
+def alternate_frame_poster_generator_same_text(frame: FacebookFrame) -> str:
+    return frame.text
+
+
 class AlternateFrameCommentPoster(FrameBotPlugin):
 
-    @staticmethod
-    def same_text(frame: FacebookFrame) -> str:
-        return frame.text
-
-    @staticmethod
-    def no_text(frame: FacebookFrame) -> None:
-        return None
-
     def __init__(self, facebook_helper: FacebookHelper, alternate_frames_directory: Path, delete_files: bool = False,
-                 message_generator: Union[str, Callable[[FacebookFrame], Union[str, None]]] = same_text):
+                 message_generator: Union[str, Callable[[FacebookFrame], Union[str, None]]] =
+                 alternate_frame_poster_generator_same_text):
         super().__init__()
         if not alternate_frames_directory.exists():
             raise ValueError(f"Can't initialize AlternateFrameCommentPoster plugin. Provided path for alternate frames"
