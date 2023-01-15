@@ -9,6 +9,10 @@ A Facebook framebot supporting the reupload of most reacted frames and random mi
 pip install pyframebot
 ```
 If you're on Linux/Mac, depending on your configuration, you may have to use pip3 and sudo. 
+## Update to the latest version
+```
+pip install --upgrade pyframebot
+```
 ## Usage
 - Create a page on Facebook
 - Take note of your Page id. You can find it in the "about" section of your page
