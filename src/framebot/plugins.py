@@ -292,9 +292,21 @@ class MirroredFramePoster(FrameBotPlugin):
 
 
 class AlternateFrameCommentPoster(FrameBotPlugin):
+    """
+    Plugin posting as a comment an alternate version of the same frame, taken from a given directory.
+    The files in the alternate directory need to be named as the ones in the main frames directory.
+    """
 
     def __init__(self, facebook_helper: FacebookHelper, alternate_frames_directory: Path, delete_files: bool = False,
                  message_generator: Union[str, Callable[[FacebookFrame], Union[str, None]]] = lambda frame: frame.text):
+        """
+        Constructor
+        :param facebook_helper: facebook_helper: Helper to gather data and post it to Facebook
+        :param alternate_frames_directory: the directory where the alternate frames are picked from
+        :param delete_files: determines if the alternate frame files need to be deleted after the comment is posted
+        :param message_generator: function used to generate the comment message, starting from the input frame, or
+        static string to use as comment message
+        """
         super().__init__()
         if not alternate_frames_directory.exists():
             raise ValueError(f"Can't initialize AlternateFrameCommentPoster plugin. Provided path for alternate frames"
