@@ -5,7 +5,7 @@ import platform
 import shutil
 import sys
 from datetime import timedelta
-from os.path import dirname
+from importlib import resources
 from pathlib import Path
 from typing import List
 
@@ -45,7 +45,7 @@ def _init_mirrored_frame_poster(config: configparser.ConfigParser, facebook_help
         )
 
 
-def _init_config_parser(config_directory: str) -> configparser.ConfigParser:
+def _init_config_parser(config_directory: Path) -> configparser.ConfigParser:
     config_path = config_directory.joinpath("config.ini")
 
     if not config_path.exists():
@@ -54,13 +54,13 @@ def _init_config_parser(config_directory: str) -> configparser.ConfigParser:
         user_input = input()
 
         yes_choices = ['yes', 'y']
-        no_choices = ['no', 'n']
 
         if user_input.lower() in yes_choices:
             logger.info(f"Generating config.ini file in {config_directory}...")
-            shutil.copy("config.ini", config_directory)
+            shutil.copy(resources.files("framebot.resources").joinpath("config.ini"), config_directory)
             logger.info("config.ini file generated. Please edit the configuration values according to your preferences"
-                        " and then press ENTER.")
+                        " and then press any key.")
+            input()
         else:
             logger.warning("The bot needs a configuration file in order to initialize. Please create or generate one in"
                            " your directory of choice.")

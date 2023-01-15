@@ -1,2 +1,2 @@
 
-include config.ini
+include src/framebot/resources/config.ini
