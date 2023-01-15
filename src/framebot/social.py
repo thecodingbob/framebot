@@ -43,7 +43,7 @@ class FacebookHelper(LoggingObject):
     DEFAULT_RETRY_MINUTES = timedelta(minutes=1)
     DEFAULT_MAX_RETRIES = 5
 
-    def __init__(self, access_token: str, page_id: str):
+    def __init__(self, access_token: str, page_id: str, timeout: timedelta = timedelta(seconds=20)):
         """
         Constructor
         :param access_token: Access token for the Facebook page
@@ -52,7 +52,9 @@ class FacebookHelper(LoggingObject):
         super().__init__()
         self.access_token: str = access_token
         self.page_id: str = page_id
-        self.graph: GraphAPI = GraphAPI(access_token=access_token)
+        # Ignoring the float warning here. The pyfacebook library incorrectly expects an integer, but then passes
+        # the value to the requests module, which in turn expects a float
+        self.graph: GraphAPI = GraphAPI(access_token=access_token, timeout=timeout.total_seconds())
 
         self.logger.info(f"Initialized GraphAPI for Facebook. Page id is {self.page_id}.")
 
