@@ -185,9 +185,9 @@ class SimpleFrameBot(Framebot):
             for plugin in self.plugins:
                 plugin.before_frame_upload(frame)
             self._upload_frame(frame)
-            self.logger.info(f"Uploaded. Waiting {self.upload_interval} seconds before the next one...")
             for plugin in self.plugins:
                 plugin.after_frame_upload(frame)
+            self.logger.info(f"Uploaded. Waiting {self.upload_interval} seconds before the next one...")
             if self.delete_files:
                 os.remove(frame.local_file)
             time.sleep(self.upload_interval.total_seconds())
