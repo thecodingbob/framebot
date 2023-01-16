@@ -5,7 +5,7 @@ import datetime
 import os
 import re
 import time
-from datetime import timedelta
+from datetime import timedelta, datetime
 from pathlib import Path
 from re import Pattern
 from typing import List, Union
@@ -191,10 +191,23 @@ class SimpleFrameBot(Framebot):
             if self.delete_files:
                 os.remove(frame.local_file)
             if not (frame.number == self.total_frames_number):
-                adjusted_pause = (frame.post_time + self.upload_interval) - datetime.datetime.now()
-                self.logger.info(f"Uploaded. Waiting {adjusted_pause.total_seconds()} seconds before the next one...")
+                adjusted_pause = self._determine_adjusted_pause(frame)
+                self.logger.info(f"Uploaded. Waiting {adjusted_pause} seconds before the next one...")
                 time.sleep(adjusted_pause.total_seconds())
         self.logger.info("Upload loop over.")
+
+    def _determine_adjusted_pause(self, last_posted_frame: FacebookFrame) -> timedelta:
+        """
+        Determines how long the bot should wait before posting the next frame, in order to be more regular
+        with the expected post interval.
+        :param last_posted_frame: the last posted frame
+        :return: the adjusted pause
+        """
+        wanted_post_time = last_posted_frame.post_time + self.upload_interval
+        now = datetime.now()
+        if wanted_post_time <= now:
+            return timedelta(seconds=0)
+        return wanted_post_time - now
 
     def _upload_frame(self, frame: FacebookFrame) -> None:
         """

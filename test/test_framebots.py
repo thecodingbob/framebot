@@ -1,8 +1,9 @@
+import datetime
 import re
 import shutil
 import sys
 import unittest
-from datetime import timedelta
+from datetime import timedelta, datetime
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from unittest.mock import Mock, patch, mock_open
@@ -185,6 +186,25 @@ class TestSimpleFrameBot(FileWritingTestCase):
         self.assertIsNotNone(test_frame.url)
         self.assertEqual(test_frame.number, self.testee.last_frame_uploaded)
         self.mock_helper.post_photo.assert_called_once_with(test_frame.local_file, test_frame.text)
+
+    @patch("framebot.framebots.datetime", spec=datetime)
+    def test_determine_adjusted_pause(self, mock_datetime: Mock):
+        fake_now = datetime(year=2020, month=1, day=1)
+        test_frame = FacebookFrame(number=1, local_file="dummy.jpg")
+        test_upload_interval = timedelta(minutes=5)
+        self.testee.upload_interval = test_upload_interval
+        mock_datetime.now.return_value = fake_now
+
+        test_frame.post_time = fake_now - test_upload_interval
+        self.assertEqual(timedelta(seconds=0), self.testee._determine_adjusted_pause(test_frame))
+
+        test_frame.post_time = fake_now
+        self.assertEqual(test_upload_interval, self.testee._determine_adjusted_pause(test_frame))
+
+        test_frame.post_time = fake_now - 2 * test_upload_interval
+        self.assertEqual(timedelta(seconds=0), self.testee._determine_adjusted_pause(test_frame))
+
+
 
 
 if __name__ == '__main__':
