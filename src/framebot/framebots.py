@@ -181,6 +181,7 @@ class SimpleFrameBot(Framebot):
         """
         The frame upload loop
         """
+        self.logger.info("Starting upload loop.")
         for frame in self.frames:
             for plugin in self.plugins:
                 plugin.before_frame_upload(frame)
@@ -193,6 +194,7 @@ class SimpleFrameBot(Framebot):
                 adjusted_pause = (frame.post_time + self.upload_interval) - datetime.datetime.now()
                 self.logger.info(f"Uploaded. Waiting {adjusted_pause.total_seconds()} seconds before the next one...")
                 time.sleep(adjusted_pause.total_seconds())
+        self.logger.info("Upload loop over.")
 
     def _upload_frame(self, frame: FacebookFrame) -> None:
         """
