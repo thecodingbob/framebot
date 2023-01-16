@@ -158,7 +158,9 @@ class TestSimpleFrameBot(FileWritingTestCase):
     @patch("os.remove")
     def test_upload_loop(self, mock_remove: Mock):
         self.testee.plugins.append(self.mock_plugin)
-        self.testee._upload_frame = Mock()
+        self.testee._upload_frame = Mock(spec=self.testee._upload_frame)
+        self.testee._determine_adjusted_pause = Mock(spec=self.testee._determine_adjusted_pause)
+        self.testee._determine_adjusted_pause.return_value = timedelta(0)
         self.testee.upload_interval = timedelta(microseconds=0)
         self._copy_frames_directory()
         self.testee._init_frames()

@@ -222,6 +222,6 @@ class SimpleFrameBot(Framebot):
         frame.photo_id = response.photo_id
         frame.post_id = response.post_id
         frame.url = f"https://facebook.com/{frame.photo_id}"
-        frame.post_time = datetime.datetime.now()
+        frame.post_time = datetime.now()
 
         self._update_last_frame_uploaded(frame.number)
