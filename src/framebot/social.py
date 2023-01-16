@@ -158,6 +158,7 @@ def open_image_stream(image: Union[Path, str, Image]) -> Union[bytes, BytesIO]:
     else:
         im_stream = BytesIO()
         image.save(im_stream, "jpeg")
+        im_stream.seek(0)
         output = im_stream
     try:
         yield output
