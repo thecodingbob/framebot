@@ -187,10 +187,11 @@ class SimpleFrameBot(Framebot):
             self._upload_frame(frame)
             for plugin in self.plugins:
                 plugin.after_frame_upload(frame)
-            self.logger.info(f"Uploaded. Waiting {self.upload_interval} seconds before the next one...")
             if self.delete_files:
                 os.remove(frame.local_file)
-            time.sleep(self.upload_interval.total_seconds())
+            adjusted_pause = (frame.post_time + self.upload_interval) - datetime.datetime.now()
+            self.logger.info(f"Uploaded. Waiting {adjusted_pause.total_seconds()} seconds before the next one...")
+            time.sleep(adjusted_pause.total_seconds())
 
     def _upload_frame(self, frame: FacebookFrame) -> None:
         """
