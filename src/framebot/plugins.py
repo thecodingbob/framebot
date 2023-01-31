@@ -179,7 +179,7 @@ class BestOfReposter(FileWritingFrameBotPlugin):
                                 os.path.join(self.album_path,
                                              f"Frame {frame.number} "
                                              f"id {frame.post_id} "
-                                             f"reactions {reactions_total}"))
+                                             f"reactions {reactions_total}.jpg"))
             os.remove(frame.local_file)
         else:
             self.logger.warning(f"File {frame.local_file} is missing. Skipping best of check...")

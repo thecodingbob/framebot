@@ -103,7 +103,7 @@ class TestBestOfReposter(FileWritingTestCase):
                                                   os.path.join(self.testee.album_path,
                                                                f"Frame {self.test_frame.number} "
                                                                f"id {self.test_frame.post_id} "
-                                                               f"reactions {reactions}"))
+                                                               f"reactions {reactions}.jpg"))
             mock_exists.assert_called_once_with(self.test_frame.local_file)
 
         # missing file
