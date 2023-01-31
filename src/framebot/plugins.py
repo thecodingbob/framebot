@@ -178,7 +178,8 @@ class BestOfReposter(FileWritingFrameBotPlugin):
                 shutil.copyfile(frame.local_file,
                                 os.path.join(self.album_path,
                                              f"Frame {frame.number} "
-                                             f"id {frame.post_id} "
+                                             f"post_id {frame.post_id} "
+                                             f"photo_id {frame.photo_id} "
                                              f"reactions {reactions_total}.jpg"))
             os.remove(frame.local_file)
         else:

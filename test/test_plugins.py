@@ -102,7 +102,8 @@ class TestBestOfReposter(FileWritingTestCase):
             mock_copyfile.assert_called_once_with(self.test_frame.local_file,
                                                   os.path.join(self.testee.album_path,
                                                                f"Frame {self.test_frame.number} "
-                                                               f"id {self.test_frame.post_id} "
+                                                               f"post_id {self.test_frame.post_id} "
+                                                               f"photo_id {self.test_frame.photo_id} "
                                                                f"reactions {reactions}.jpg"))
             mock_exists.assert_called_once_with(self.test_frame.local_file)
 
