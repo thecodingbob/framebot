@@ -126,7 +126,7 @@ class SimpleFrameBot(Framebot):
                 self.logger.info(f"Last frame uploaded is {self.last_frame_uploaded}.")
         else:
             self.last_frame_uploaded = -1
-            self.logger.info(f"Starting the bot from the first frame.")
+            self.logger.info(f"Starting the bot for the first frame.")
 
     def _log_parameters(self) -> None:
         """
