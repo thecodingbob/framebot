@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyframebot"
-version = "1.1.7"
+version = "1.1.8"
 description = "A frame-posting bot for Facebook pages"
 readme = "README.md"
 authors = [{ name = "TheCodingBob", email = "vey90@live.it" }]
@@ -35,7 +35,7 @@ version = {attr = "package.__version__"}
 
 
 [tool.bumpver]
-current_version = "1.1.7"
+current_version = "1.1.8"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
