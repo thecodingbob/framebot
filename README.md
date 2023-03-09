@@ -27,7 +27,6 @@ pip install --upgrade pyframebot
 ## Configuration
 You can change the bot's behavior editing the options in the `config.ini` file, which is divided in four sections:
 - **facebook**
-  - *page_id* - Your page's id. You can get it in the "about" section of the page or in the access token debugger.
   - *access_token* - The access token the bot needs to post on your page. See the Usage section.
 - **bot_settings** 
   - *upload_interval* - Seconds the bot will wait in between frame postings. Change this to make the bot post more or less often. Don't set it too small, or you'll quickly end your API usages and end up blocked for hours.
@@ -44,7 +43,7 @@ You can change the bot's behavior editing the options in the `config.ini` file, 
   - *wait_hours* - Number of hours a frame is given to accumulate reactions, before it's checked for reposting.
 - **mirroring**
   - *enabled* - Set this to `True` if you want your bot to randomly mirror an image at the horizontal center and repost it.
-  - *mirror_album_id* - Same as *best_of_album_id*, but for mirrored photos. If you just want those pics to be uploaded in your page's timeline, set this to the same value as *page_id*.
+  - *mirror_album_id* - Same as *best_of_album_id*, but for mirrored photos. If you just want those pics to be uploaded in your page's timeline, set this to the "me".
   - *ratio* - Every frame will have a ratio% chance of being mirrored.
 - **alternate_frame_poster**
   - *enabled* - Set this to `True` if you want your bot to post an alternate version of the same frame in the post's comments. This is useful, for example, if you want to also post the raw frame (i.e. the frame without subtitle)

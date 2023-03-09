@@ -84,9 +84,8 @@ def _configure_window(movie_title: str) -> None:
 
 def _init_facebook_helper(config: configparser.ConfigParser) -> FacebookHelper:
     facebook_settings = config["facebook"]
-    page_id = facebook_settings.get("page_id")
     access_token = facebook_settings.get("access_token")
-    return FacebookHelper(access_token=access_token, page_id=page_id)
+    return FacebookHelper(access_token=access_token)
 
 
 def _init_alternate_frame_poster(config: configparser.ConfigParser, facebook_helper: FacebookHelper,
