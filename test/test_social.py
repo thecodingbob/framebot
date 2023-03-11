@@ -35,6 +35,22 @@ class TestFacebookHelper(TestCase):
         self.testee = FacebookHelper(access_token=ACCESS_TOKEN)
         self.mock_request_method.reset_mock()
 
+    def test_init_page_details(self):
+        self.assertEqual(PAGE_ID, self.testee.page_id)
+        self.assertEqual(PAGE_NAME, self.testee.page_name)
+
+    def test_default_query_params(self):
+        self.assertEqual({"access_token": ACCESS_TOKEN, "format": "json"}, self.testee._default_query_params())
+
+    def test_base_request(self):
+        pass
+
+    def test_get_object(self):
+        pass
+
+    def test_post_object(self):
+        pass
+
     def test_post_photo(self):
         self._test_post_photo(DUMMY_IMAGE)
         self._test_post_photo(DUMMY_IMAGE, "some_album")
