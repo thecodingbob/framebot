@@ -20,7 +20,7 @@ dependencies = [
     "jsonpickle",
     "python-slugify"
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 
 [project.urls]
 Homepage = "https://github.com/thecodingbob/framebot"

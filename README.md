@@ -2,7 +2,7 @@
 A Facebook framebot supporting the reupload of most reacted frames and random mirroring.
 
 ## Requirements
-- Python >= 3.7: https://www.python.org/downloads/
+- Python >= 3.8: https://www.python.org/downloads/
 
 ## Installation
 ```

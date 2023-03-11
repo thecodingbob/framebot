@@ -67,11 +67,7 @@ class TestFacebookHelper(TestCase):
 
         mock_post_object.assert_called_once()
         call_args = mock_post_object.call_args
-        if type(call_args.kwargs) == dict:
-            call_args = call_args.kwargs
-        else:
-            # python 3.7
-            call_args = call_args[1]
+        call_args = call_args.kwargs
         image = call_args['files']['source']
 
         self.assertTrue(image.closed)
@@ -146,11 +142,7 @@ class TestFacebookHelper(TestCase):
         self.assertEqual(expected_comment_id, comment_id)
         self.assertEqual(4, mock_post_object.call_count)
         call_args = mock_post_object.call_args
-        if type(call_args.kwargs) == dict:
-            call_args = call_args.kwargs
-        else:
-            # python 3.7
-            call_args = call_args[1]
+        call_args = call_args.kwargs
         self.assertEqual({"message": None}, call_args["data"])
 
 
