@@ -12,7 +12,6 @@ from random import random
 from typing import List, Type, Dict, Union, Callable
 
 from PIL import Image, ImageOps
-from pyfacebook import FacebookError
 
 from pathlib import Path
 import os
@@ -20,7 +19,7 @@ import os
 from . import DEFAULT_WORKING_DIR
 from . import utils
 from .model import FacebookFrame
-from .social import FacebookHelper
+from .social import FacebookHelper, FacebookError
 
 
 class FrameBotPlugin(utils.LoggingObject):

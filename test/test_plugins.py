@@ -5,17 +5,15 @@ import unittest
 import os
 from datetime import timedelta, datetime
 from pathlib import Path
-from typing import Callable
 from unittest import TestCase
 from unittest.mock import Mock, patch, DEFAULT
-from pyfacebook import FacebookError
 
 from PIL import Image, ImageOps
 from framebot import utils
 
 from framebot.model import FacebookFrame
 from framebot.plugins import BestOfReposter, MirroredFramePoster, FileWritingFrameBotPlugin, AlternateFrameCommentPoster
-from framebot.social import FacebookHelper
+from framebot.social import FacebookHelper, FacebookError
 from test import RESOURCES_DIR
 from test.utils_for_tests import FileWritingTestCase, generate_test_frame
 
@@ -128,9 +126,11 @@ class TestBestOfReposter(FileWritingTestCase):
         mock_json_dump.reset_mock()
 
         # FacebookError raised
-        mock_check_and_post.side_effect = FacebookError(kwargs={"error": {
+        mock_check_and_post.side_effect = FacebookError({"error": {
             "message": "Not important",
-            "code": 0
+            "code": 0,
+            "type": "Meaningless",
+            "fbtrace_id": ""
         }})
         expected_len = len(self.testee.yet_to_check)
 
