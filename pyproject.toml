@@ -18,7 +18,8 @@ keywords = ["bot", "facebook", "everyframeinorder", "frame", "order"]
 dependencies = [
     "Pillow >= 9.4.0",
     "jsonpickle",
-    "python-slugify"
+    "python-slugify",
+    "requests"
 ]
 requires-python = ">=3.8"
 
