@@ -140,7 +140,7 @@ class FacebookHelper(LoggingObject):
         """
         return self.get_object(object_id=object_id, fields=[self.STORY_ID_FIELD])[self.STORY_ID_FIELD]
 
-    def post_photo(self, image: Union[Path, str, Image], message: str, album_id: str = "me") -> \
+    def post_photo(self, image: Union[Path, str, Image], message: str, album_id: str = None) -> \
             FacebookPostPhotoResponse:
         """
         Uploads a photo to a specific album, or to the news feed if no album id is specified
